@@ -1,0 +1,202 @@
+/**
+ * --------------------------------------
+ *
+ * Hexes Source Code - editor.c
+ * By StephenM
+ * Copyright 2024 - 2026
+ * License: GPL-3.0
+ *
+ * --------------------------------------
+**/
+
+#include "editor.h"
+#include "defines.h"
+#include <stdlib.h>
+#include <stdint.h>
+#include <fileioc.h>
+#include <keypadc.h>
+#include <graphx.h>
+#include "dectohex.h"
+#include "ui.h"
+
+#define FRAMETIMER_BUF_START 50
+#define EDIT_REPEATTIMER 4
+
+int start_editor(char *filename, uint8_t filetype) {
+
+	uint24_t cursor_o = 0; // Cursor offset in file
+	uint24_t scroll = 0;
+	uint8_t nibble = 0;
+
+	int frametimer = 0;
+	int repeattimer = 0;
+
+	bool modified = false;
+
+	//gfx_SetPalette(xlibc, 256, 0);
+	gfx_SetTransparentColor(MAGENTA);
+	gfx_SetTextTransparentColor(BLACK);
+
+	gfx_FillScreen(COLORS_BG);
+
+	gfx_SetTextFGColor(COLORS_FG);
+	gfx_SetTextBGColor(COLORS_BG);
+
+	gfx_SetMonospaceFont(8);
+
+	uint8_t buf_h = ti_Open(BUFFER_FILENAME, "r+");
+
+	uint24_t frame = 0; // idk why this is here, probably leftover from BloxorzCE's code which I used as a baseline for this project for some fuckin reason
+
+	gfx_SetDrawBuffer();
+
+	for (;;) {
+		kb_Scan();
+
+		if (frametimer > FRAMETIMER_BUF_START) {
+			if kb_IsDown(kb_KeyClear) {break;}
+
+			if kb_IsDown(kb_KeyYequ) {
+				ui_menu(0, 160,
+					"New       \0"
+					"Open      \0"
+					"Save      \0"
+					"Save as   \0"
+					"Quit      \0"
+					"Close menu\0",
+				11, 6);
+			}
+		}
+
+		uint24_t cursor_o_previous = cursor_o;
+		if kb_IsDown(kb_KeyUp) {cursor_o-=8;}
+		if kb_IsDown(kb_KeyDown) {cursor_o+=8;}
+		if kb_IsDown(kb_KeyLeft) {cursor_o--;}
+		if kb_IsDown(kb_KeyRight) {cursor_o++;}
+
+		if (cursor_o > 0xFFFFF0) {cursor_o = 0;}
+		if (cursor_o >= ti_GetSize(buf_h)) {cursor_o = ti_GetSize(buf_h) - 1;}
+		if (cursor_o < scroll*8) {scroll--;}
+		if (cursor_o > (scroll + 21)*8) {scroll++;}
+
+		if (cursor_o != cursor_o_previous) {nibble = 0;}
+
+		{
+			int num = -1;
+			if kb_IsDown(kb_Key0) {num = 0;}
+			else if kb_IsDown(kb_Key1) {num = 1;}
+			else if kb_IsDown(kb_Key2) {num = 2;}
+			else if kb_IsDown(kb_Key3) {num = 3;}
+			else if kb_IsDown(kb_Key4) {num = 4;}
+			else if kb_IsDown(kb_Key5) {num = 5;}
+			else if kb_IsDown(kb_Key6) {num = 6;}
+			else if kb_IsDown(kb_Key7) {num = 7;}
+			else if kb_IsDown(kb_Key8) {num = 8;}
+			else if kb_IsDown(kb_Key9) {num = 9;}
+			else if kb_IsDown(kb_KeyMath) {num = 10;}
+			else if kb_IsDown(kb_KeyApps) {num = 11;}
+			else if kb_IsDown(kb_KeyPrgm) {num = 12;}
+			else if kb_IsDown(kb_KeyRecip) {num = 13;}
+			else if kb_IsDown(kb_KeySin) {num = 14;}
+			else if kb_IsDown(kb_KeyCos) {num = 15;}
+			if (num != -1) {
+				repeattimer++;
+				if (repeattimer == 1 || repeattimer > EDIT_REPEATTIMER) {
+				modified = true;
+				ti_Seek(cursor_o, SEEK_SET, buf_h);
+				uint8_t c;
+				ti_Read(&c, 1, 1, buf_h);
+				ti_Seek(-1, SEEK_CUR, buf_h);
+				if (nibble == 0) {
+					c = (c & 0x0F) | (num << 4);
+					nibble = 1;
+				} else {
+					c = (c & 0xF0) | num;
+					nibble = 0;
+					cursor_o++;
+				}
+				ti_Write(&c, 1, 1, buf_h);
+				}
+			} else {
+				repeattimer = 0;
+			}
+		}
+
+		gfx_FillScreen(COLORS_BG);
+
+		gfx_SetTextBGColor(COLORS_BG);
+		gfx_SetTextFGColor(COLORS_FG);
+		gfx_SetTextXY(2, 2);
+		gfx_PrintString("Hexes   ");
+		gfx_PrintString(filename);
+		if (modified) {
+			gfx_PrintString(" (modified)");
+		}
+
+		gfx_PrintStringXY("File", 0, 232);
+		gfx_PrintStringXY("Edit", 64, 232);
+		gfx_PrintStringXY("View", 132, 232);
+		gfx_PrintStringXY("Navigate", 192, 232);
+		gfx_PrintStringXY("Help", 288, 232);
+
+		gfx_SetColor(COLORS_FG);
+		gfx_HorizLine(0, 229, 320);
+		gfx_HorizLine(0, 11, 320);
+		gfx_VertLine(70, 11, 218);
+		gfx_VertLine(250, 11, 218);
+
+		ti_Seek(scroll * 8, SEEK_SET, buf_h);
+		for (uint24_t i = 0; i < 21; i++) {
+			gfx_SetTextFGColor(COLORS_FG);
+			gfx_SetTextXY(2, i*10 + 16);
+			gfx_PrintUInt((i+scroll) * 8, 8);
+			for (uint24_t o = 0; o < 8; o++) {
+				uint24_t offset = (i+scroll)*8+o;
+				if (offset < ti_GetSize(buf_h)) {
+				bool selected = offset == cursor_o;
+				char c;
+				ti_Read(&c, 1, 1, buf_h);
+				uint8_t num = (uint8_t)c;
+				//uint8_t num = *(uint8_t*)b;
+				/*if (selected) {
+					gfx_SetTextFGColor(COLORS_BG);
+				} else*/ {
+					uint8_t color = COLORS_FG;
+					if (num == 0) {color = COLORS_NULL;}
+					else if (num < 0x20) {color = COLORS_01_1F;}
+					else if (num < 0x80) {color = COLORS_20_7F;}
+					else {color = COLORS_80_FF;}
+					gfx_SetTextFGColor(color);
+				}
+				if (selected) {
+					gfx_SetColor(COLORS_CURSOR);
+					gfx_Rectangle(83 + o * 20 + nibble * 10, i*10 + 15, 8, 10);
+				}
+				//gfx_SetTextXY(80 + o * 20, i*10 + 16);
+				gfx_SetTextXY(84 + o * 20, i*10 + 16);
+				char *sub = dec_to_hex_u8b(num);
+				gfx_PrintString(sub);
+				if (selected) {
+					gfx_SetTextBGColor(COLORS_CURSOR);
+					gfx_SetTextFGColor(COLORS_BG);
+				}
+				gfx_SetTextXY(256 + o * 8, i*10 + 16);
+				if (num <= 127) {
+					gfx_PrintChar(c);
+				} else {
+					gfx_PrintChar('.');
+				}
+				if (selected) { gfx_SetTextBGColor(COLORS_BG); }
+				}
+			}
+		}
+
+		gfx_SwapDraw();
+
+		while (!kb_AnyKey()) {repeattimer = 0; frametimer++;}
+	}
+
+	ti_Close(buf_h);
+
+	return 0;
+}
