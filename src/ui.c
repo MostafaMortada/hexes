@@ -22,7 +22,8 @@ void ui_message(int x, int y, int type, char *str) {
 	// i'll do it later lmao
 }*/
 
-int ui_menu(int x, int y, char *opt, int olen, int menusize) {
+
+int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize) {
 	uint8_t drawloc = gfx_GetDraw();
 	gfx_SetDrawScreen();
 
@@ -31,14 +32,14 @@ int ui_menu(int x, int y, char *opt, int olen, int menusize) {
 	gfx_SetColor(COLORS_BG);
 	gfx_FillRectangle(x+2, y+2, olen * 8 - 4, menusize * 10 + 2);
 
-	int option = 0;
+	int option = minopt;
 	for(;;) {
 		kb_Scan();
 		if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {break;}
 		if kb_IsDown(kb_KeyUp) {option--;}
 		if kb_IsDown(kb_KeyDown) {option++;}
-		if (option < 0) {option = menusize-1;}
-		if (option >= menusize) {option = 0;}
+		if (option < minopt) {option = menusize-1;}
+		if (option >= menusize) {option = minopt;}
 
 		for (int i = 0; i < menusize; i++) {
 			gfx_SetTextTransparentColor(MAGENTA);

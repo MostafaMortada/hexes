@@ -14,6 +14,6 @@
 
 //void ui_message(int x, int y, int type, char *str);
 
-int ui_menu(int x, int y, char *opt, int olen, int menusize);
+int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize);
 
 #endif

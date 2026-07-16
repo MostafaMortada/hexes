@@ -52,19 +52,27 @@ int start_editor(char *filename, uint8_t filetype) {
 
 	for (;;) {
 		kb_Scan();
+		bool wanna_quit = false;
 
 		if (frametimer > FRAMETIMER_BUF_START) {
-			if kb_IsDown(kb_KeyClear) {break;}
+			if kb_IsDown(kb_KeyClear) {wanna_quit = true;}
 
 			if kb_IsDown(kb_KeyYequ) {
-				ui_menu(0, 160,
-					"New       \0"
-					"Open      \0"
+				int option = ui_menu(0, 160,
 					"Save      \0"
-					"Save as   \0"
 					"Quit      \0"
 					"Close menu\0",
-				11, 6);
+				0, 11, 3);
+				switch (option) {
+					case 0:
+						modified = false;
+						break;
+					case 1:
+						wanna_quit = true;
+						break;
+					default:
+						break;
+				}
 			}
 		}
 
@@ -192,6 +200,27 @@ int start_editor(char *filename, uint8_t filetype) {
 		}
 
 		gfx_SwapDraw();
+
+		if (wanna_quit) {
+			if (modified) {
+				bool will_quit = false;
+				switch (ui_menu(0, 160,
+						"There are unsaved changes.\0"
+						"Do you really wanna quit? \0"
+						"No                        \0"
+						"Yes                       \0",
+					2, 27, 4)) {
+					case 3:
+						will_quit = true;
+						break;
+					default:
+						break;
+				}
+				if (will_quit) {break;}
+			} else {
+				break;
+			}
+		}
 
 		while (!kb_AnyKey()) {repeattimer = 0; frametimer++;}
 	}
