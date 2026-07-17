@@ -20,9 +20,11 @@
 #include "ui.h"
 
 #define FRAMETIMER_BUF_START 50
-#define EDIT_REPEATTIMER 4
+#define EDIT_REPEATTIMER 12
 
 int start_editor(char *filename, uint8_t filetype) {
+
+	bool full_redraw = true;
 
 	uint24_t cursor_o = 0; // Cursor offset in file
 	uint24_t scroll = 0;
@@ -37,7 +39,7 @@ int start_editor(char *filename, uint8_t filetype) {
 
 	//gfx_SetPalette(xlibc, 256, 0);
 	gfx_SetTransparentColor(MAGENTA);
-	gfx_SetTextTransparentColor(BLACK);
+	gfx_SetTextTransparentColor(1);
 
 	gfx_FillScreen(COLORS_BG);
 
@@ -60,7 +62,8 @@ int start_editor(char *filename, uint8_t filetype) {
 			if kb_IsDown(kb_KeyClear) {wanna_quit = true;}
 
 			if kb_IsDown(kb_KeyYequ) {
-				int option = ui_menu(0, 160,
+				full_redraw = true;
+				int option = ui_menu(0, 190,
 					"Save      \0"
 					"Quit      \0"
 					"Close menu\0",
@@ -76,6 +79,75 @@ int start_editor(char *filename, uint8_t filetype) {
 						break;
 				}
 			}
+
+			if kb_IsDown(kb_KeyWindow) {
+				full_redraw = true;
+				int option = ui_menu(0, 190,
+					"Option 1  \0"
+					"Option 2  \0"
+					"Close menu\0",
+				0, 11, 3);
+				switch (option) {
+					case 0:
+						break;
+					case 1:
+						break;
+					default:
+						break;
+				}
+			}
+
+			if kb_IsDown(kb_KeyZoom) {
+				full_redraw = true;
+				int option = ui_menu(0, 190,
+					"Option 1     \0"
+					"Customization\0"
+					"Close menu   \0",
+				0, 14, 3);
+				switch (option) {
+					case 0:
+						break;
+					case 1:
+						break;
+					default:
+						break;
+				}
+			}
+
+			if kb_IsDown(kb_KeyTrace) {
+				full_redraw = true;
+				int option = ui_menu(0, 190,
+					"Go to address\0"
+					"Option 2     \0"
+					"Close menu   \0",
+				0, 14, 3);
+				switch (option) {
+					case 0:
+						break;
+					case 1:
+						break;
+					default:
+						break;
+				}
+			}
+
+			if kb_IsDown(kb_KeyGraph) {
+				full_redraw = true;
+				int option = ui_menu(0, 180,
+					"About        \0"
+					"General usage\0"
+					"Other actions\0"
+					"Close menu   \0",
+				0, 14, 4);
+				switch (option) {
+					case 0:
+						break;
+					case 1:
+						break;
+					default:
+						break;
+				}
+			}
 		}
 
 		uint24_t cursor_o_previous = cursor_o;
@@ -86,8 +158,8 @@ int start_editor(char *filename, uint8_t filetype) {
 
 		if (cursor_o > 0xFFFFF0) {cursor_o = 0;}
 		if (cursor_o >= ti_GetSize(buf_h)) {cursor_o = ti_GetSize(buf_h) - 1;}
-		if (cursor_o < scroll*8) {scroll--;}
-		if (cursor_o > (scroll + 21)*8) {scroll++;}
+		if (cursor_o < scroll*8) {scroll--; full_redraw = true;}
+		if (cursor_o >= (scroll + 21)*8) {scroll++; full_redraw = true;}
 
 		if (cursor_o != cursor_o_previous) {nibble = 0;}
 
@@ -255,7 +327,14 @@ int start_editor(char *filename, uint8_t filetype) {
 			}
 		}
 
-		gfx_FillScreen(COLORS_BG);
+
+		if (full_redraw) {
+			gfx_SetDrawBuffer();
+		} else {
+			gfx_SetDrawScreen();
+		}
+
+		if (full_redraw) {gfx_FillScreen(COLORS_BG);}
 
 		gfx_SetTextBGColor(COLORS_BG);
 		gfx_SetTextFGColor(COLORS_FG);
@@ -278,8 +357,12 @@ int start_editor(char *filename, uint8_t filetype) {
 		gfx_VertLine(70, 11, 218);
 		gfx_VertLine(250, 11, 218);
 
-		ti_Seek(scroll * 8, SEEK_SET, buf_h);
-		for (uint24_t i = 0; i < 21; i++) {
+		int row_min = full_redraw ? 0 : (cursor_o / 8) - scroll - 2;
+		int row_max = full_redraw ? 21 : (cursor_o / 8) - scroll + 3;
+		if (row_min < 0) {row_min = 0;}
+		if (row_max > 21) {row_max = 21;}
+		ti_Seek((scroll + row_min) * 8, SEEK_SET, buf_h);
+		for (uint24_t i = row_min; i < row_max; i++) {
 			gfx_SetTextFGColor(COLORS_FG);
 			gfx_SetTextXY(2, i*10 + 16);
 			gfx_PrintUInt((i+scroll) * 8, 8);
@@ -293,22 +376,35 @@ int start_editor(char *filename, uint8_t filetype) {
 				//uint8_t num = *(uint8_t*)b;
 				/*if (selected) {
 					gfx_SetTextFGColor(COLORS_BG);
-				} else*/ {
-					uint8_t color = COLORS_FG;
-					if (num == 0) {color = COLORS_NULL;}
-					else if (num < 0x20) {color = COLORS_01_1F;}
-					else if (num < 0x80) {color = COLORS_20_7F;}
-					else {color = COLORS_80_FF;}
-					gfx_SetTextFGColor(color);
-				}
-				if (selected) {
+				} else*/
+				uint8_t color = COLORS_FG;
+				if (num == 0) {color = COLORS_NULL;}
+				else if (num < 0x20) {color = COLORS_01_1F;}
+				else if (num < 0x80) {color = COLORS_20_7F;}
+				else {color = COLORS_80_FF;}
+				gfx_SetTextFGColor(color);
+
+				/*if (selected) {
 					gfx_SetColor(COLORS_CURSOR);
 					gfx_Rectangle(83 + o * 20 + nibble * 10, i*10 + 15, 8, 10);
-				}
+				}*/
 				//gfx_SetTextXY(80 + o * 20, i*10 + 16);
 				gfx_SetTextXY(84 + o * 20, i*10 + 16);
 				char *sub = dec_to_hex_u8b(num);
-				gfx_PrintString(sub);
+				if (selected) {
+					for (int ch = 0; ch < 2; ch++) {
+						if (ch == nibble) {
+							gfx_SetTextBGColor(COLORS_CURSOR);
+							gfx_SetTextFGColor(COLORS_BG);
+						} else {
+							gfx_SetTextBGColor(COLORS_BG);
+							gfx_SetTextFGColor(color);
+						}
+						gfx_PrintChar(sub[ch]);
+					}
+				} else {
+					gfx_PrintString(sub);
+				}
 				if (selected) {
 					gfx_SetTextBGColor(COLORS_CURSOR);
 					gfx_SetTextFGColor(COLORS_BG);
@@ -324,7 +420,8 @@ int start_editor(char *filename, uint8_t filetype) {
 			}
 		}
 
-		gfx_SwapDraw();
+
+		if (full_redraw) {full_redraw = false; gfx_SwapDraw();}
 
 		if (wanna_quit) {
 			if (modified) {
@@ -347,7 +444,8 @@ int start_editor(char *filename, uint8_t filetype) {
 			}
 		}
 
-		while (!kb_AnyKey()) {repeattimer = 0; frametimer++;}
+		frametimer++;
+		//while (!kb_AnyKey()) {repeattimer = 0; frametimer++;}
 	}
 
 	ti_Close(buf_h);
