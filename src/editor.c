@@ -63,7 +63,7 @@ int start_editor(char *filename, uint8_t filetype) {
 
 			if kb_IsDown(kb_KeyYequ) {
 				full_redraw = true;
-				int option = ui_menu(0, 190,
+				int option = ui_menu(2, 190,
 					"Save      \0"
 					"Quit      \0"
 					"Close menu\0",
@@ -82,7 +82,7 @@ int start_editor(char *filename, uint8_t filetype) {
 
 			if kb_IsDown(kb_KeyWindow) {
 				full_redraw = true;
-				int option = ui_menu(0, 190,
+				int option = ui_menu(48, 190,
 					"Option 1  \0"
 					"Option 2  \0"
 					"Close menu\0",
@@ -99,7 +99,7 @@ int start_editor(char *filename, uint8_t filetype) {
 
 			if kb_IsDown(kb_KeyZoom) {
 				full_redraw = true;
-				int option = ui_menu(0, 190,
+				int option = ui_menu(100, 190,
 					"Option 1     \0"
 					"Customization\0"
 					"Close menu   \0",
@@ -116,7 +116,7 @@ int start_editor(char *filename, uint8_t filetype) {
 
 			if kb_IsDown(kb_KeyTrace) {
 				full_redraw = true;
-				int option = ui_menu(0, 190,
+				int option = ui_menu(180, 190,
 					"Go to address\0"
 					"Option 2     \0"
 					"Close menu   \0",
@@ -133,7 +133,7 @@ int start_editor(char *filename, uint8_t filetype) {
 
 			if kb_IsDown(kb_KeyGraph) {
 				full_redraw = true;
-				int option = ui_menu(0, 180,
+				int option = ui_menu(206, 180,
 					"About        \0"
 					"General usage\0"
 					"Other actions\0"
@@ -426,7 +426,7 @@ int start_editor(char *filename, uint8_t filetype) {
 		if (wanna_quit) {
 			if (modified) {
 				bool will_quit = false;
-				switch (ui_menu(0, 160,
+				switch (ui_menu(8, 8,
 						"There are unsaved changes.\0"
 						"Do you really wanna quit? \0"
 						"No                        \0"
