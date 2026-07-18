@@ -31,6 +31,7 @@ int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize) {
 	gfx_FillRectangle(x, y, olen * 8, menusize * 10 + 6);
 	gfx_SetColor(COLORS_BG);
 	gfx_FillRectangle(x+2, y+2, olen * 8 - 4, menusize * 10 + 2);
+	gfx_Rectangle(x, y, olen * 8, menusize * 10 + 6);
 
 	int option = minopt;
 	for(;;) {
