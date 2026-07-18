@@ -4,6 +4,8 @@ for the TI-84 Plus CE
 
 By Mostafa Mortada (StephenM)
 
+Forum topic: https://ceme.tech/t19975
+
 ## What is this?
 
 This is a C rewrite of my 'old' hex editor of the same name, which was written in the ICE programming language.

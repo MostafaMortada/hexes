@@ -10,12 +10,6 @@
  * --------------------------------------
 **/
 
-/*
- * So uhm
- * This is my second ever C project
- * so beware, ugly code incoming
- */
-
 #include <stdlib.h>
 #include <fileioc.h>
 #include <keypadc.h>
