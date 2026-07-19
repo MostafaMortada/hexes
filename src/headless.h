@@ -1,3 +1,14 @@
+/**
+ * --------------------------------------
+ *
+ * Hexes Source Code - headless.h
+ * By StephenM
+ * Copyright 2024 - 2026
+ * License: GPL-3.0
+ *
+ * --------------------------------------
+**/
+
 #ifndef HEADLESS_H
 #define HEADLESS_H
 

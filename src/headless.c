@@ -1,3 +1,14 @@
+/**
+ * --------------------------------------
+ *
+ * Hexes Source Code - headless.c
+ * By StephenM
+ * Copyright 2024 - 2026
+ * License: GPL-3.0
+ *
+ * --------------------------------------
+**/
+
 #include "headless.h"
 #include <string.h>
 
@@ -32,14 +43,13 @@ char *check_for_ans(uint8_t *filetype) {
 			}
 
 			if (flags & (1 << 2)) { // Variable editor
-				char filename[9] = "\0\0\0\0\0\0\0\0\0";
-				for (int i = 0; i < Ans->data[17]; i++) {
+				static char filename[9];
+				memset(filename, 0, sizeof(filename));
+				for (int i = 0; i < Ans->data[17] && i < 8; i++) {
 					filename[i] = Ans->data[i + 9];
 				}
 				*filetype = (uint8_t) Ans->data[18];
-				char *filen = "";
-				strcpy(filen, filename);
-				return filen;
+				return filename;
 			}
 		}
 	} else {
