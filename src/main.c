@@ -21,31 +21,24 @@
 #include "defines.h"
 #include "fileselect.h"
 #include "editor.h"
+#include "headless.h"
 //#include "gfx/gfx.h"
 
 int main(void) {
-	/*
-	uint8_t AnsType;
-	void *Ans = os_GetAnsData(&AnsType);
-	string_t *filename_a;
-	if (Ans != NULL && AnsType == OS_TYPE_STR) {
-		filename_a = Ans;
-		//printf("Len: %d\n", name->len);
-		if (filename_a->len > 8 || filename_a->len == 0) {
-			return 1;
-		}
-	} else {
-		return 1;
-	}
-	*/
+
+	uint8_t filetype;
+
+	char *filename = check_for_ans(&filetype);
 
 	gfx_Begin();
 	gfx_SetFontData(font);
 	kb_SetMode(MODE_3_CONTINUOUS);
 
-	uint8_t filetype;
-	char *filename = fileselectmenu(&filetype);
-	if (filename[1] >= 'A') {
+	if (filename[0] < 'A') {
+		filename = fileselectmenu(&filetype);
+	}
+
+	if (filename[0] >= 'A') {
 		uint8_t bufferh = ti_Open(BUFFER_FILENAME, "w");
 		uint8_t fileih = ti_OpenVar(filename, "r", filetype);
 		ti_Write(ti_GetDataPtr(fileih), ti_GetSize(fileih), 1, bufferh);
