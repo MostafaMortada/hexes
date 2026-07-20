@@ -19,7 +19,7 @@
 #include "dectohex.h"
 #include "ui.h"
 
-#define FRAMETIMER_BUF_START 50
+//#define FRAMETIMER_BUF_START 50
 #define EDIT_REPEATTIMER 12
 
 int start_editor(char *filename, uint8_t filetype) {
@@ -28,7 +28,7 @@ int start_editor(char *filename, uint8_t filetype) {
 
 	uint24_t cursor_o = 0; // Cursor offset in file
 	uint24_t scroll = 0;
-	uint8_t nibble = 0;
+	uint8_t nibble = 0; // which nibble of a byte is highlighted
 
 	int tab = 1; // 0 for editing hex digits, 1 for editing ascii
 
@@ -50,15 +50,18 @@ int start_editor(char *filename, uint8_t filetype) {
 
 	uint8_t buf_h = ti_Open(BUFFER_FILENAME, "r+");
 
-	uint24_t frame = 0; // idk why this is here, probably leftover from BloxorzCE's code which I used as a baseline for this project for some fuckin reason
+	//uint24_t frame = 0; // idk why this is here, probably leftover from BloxorzCE's code which I used as a baseline for this project for some fuckin reason
 
 	gfx_SetDrawBuffer();
+
+	while (kb_AnyKey()); // key debouncing
 
 	for (;;) {
 		kb_Scan();
 		bool wanna_quit = false;
 
-		if (frametimer > FRAMETIMER_BUF_START) {
+		//if (frametimer > FRAMETIMER_BUF_START)
+		{
 			if kb_IsDown(kb_KeyClear) {wanna_quit = true;}
 
 			if kb_IsDown(kb_KeyYequ) {
