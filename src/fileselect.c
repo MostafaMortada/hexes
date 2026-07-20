@@ -113,7 +113,7 @@ char *fileselectmenu(uint8_t *outfiletype) {
 			gfx_SetTextBGColor(COLORS_BG);
 
 			for (int i = 0; i < 20; i++) {
-				if (i + scroll <= namelistsize) {
+				if (i + scroll < namelistsize) {
 					if (i + scroll == cursor) {
 						gfx_PrintStringXY(">", 32, i * 10 + 24);
 					}
@@ -139,7 +139,7 @@ char *fileselectmenu(uint8_t *outfiletype) {
 			if kb_IsDown(kb_KeyDown) {cursor++;}
 			if kb_IsDown(kb_KeyUp) {cursor--;}
 			if (cursor < scroll) {scroll--;}
-			if (cursor > 1000) {cursor = namelistsize - 1; scroll = cursor - 20;}
+			if (cursor > 1000) {cursor = namelistsize - 1; scroll = namelistsize >= 20 ? cursor - 20 : scroll;}
 			if (namelist[cursor][0] == '\0') {cursor = 0; scroll = 0;}
 			if (cursor > scroll + 19) {scroll++;}
 
