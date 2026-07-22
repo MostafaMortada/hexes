@@ -30,7 +30,7 @@ int start_editor(char *filename, uint8_t filetype) {
 	uint24_t scroll = 0;
 	uint8_t nibble = 0; // which nibble of a byte is highlighted
 
-	int tab = 1; // 0 for editing hex digits, 1 for editing ascii
+	int tab = 0; // 0 for editing hex digits, 1 for editing ascii
 
 	int frametimer = 0;
 	int repeattimer = 0;
@@ -59,6 +59,9 @@ int start_editor(char *filename, uint8_t filetype) {
 	int num_prev = -1;
 	char keypad_pr_prev = '\0';
 
+	bool key_switchtab = false;
+	bool key_switchtab_prev = false;
+
 	for (;;) {
 		kb_Scan();
 		bool wanna_quit = false;
@@ -66,6 +69,13 @@ int start_editor(char *filename, uint8_t filetype) {
 		//if (frametimer > FRAMETIMER_BUF_START)
 		{
 			if kb_IsDown(kb_KeyClear) {wanna_quit = true;}
+			key_switchtab_prev = key_switchtab;
+			key_switchtab = kb_IsDown(kb_KeyMode);
+
+			if (key_switchtab && !key_switchtab_prev) {
+				tab = 1 - tab;
+				full_redraw = true;
+			}
 
 			if kb_IsDown(kb_KeyYequ) {
 				full_redraw = true;
@@ -367,6 +377,15 @@ int start_editor(char *filename, uint8_t filetype) {
 		gfx_HorizLine(0, 11, 320);
 		gfx_VertLine(70, 11, 218);
 		gfx_VertLine(250, 11, 218);
+		gfx_SetColor(COLORS_CURSOR);
+		switch (tab) {
+			case 0:
+				gfx_Rectangle(72, 13, 177, 215);
+				break;
+			case 1:
+				gfx_Rectangle(252, 13, 69, 215);
+				break;
+		}
 
 		int row_min = full_redraw ? 0 : (cursor_o / 8) - scroll - 2;
 		int row_max = full_redraw ? 21 : (cursor_o / 8) - scroll + 3;
