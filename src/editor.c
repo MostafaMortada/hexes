@@ -56,6 +56,9 @@ int start_editor(char *filename, uint8_t filetype) {
 
 	while (kb_AnyKey()); // key debouncing
 
+	int num_prev = -1;
+	char keypad_pr_prev = '\0';
+
 	for (;;) {
 		kb_Scan();
 		bool wanna_quit = false;
@@ -185,6 +188,7 @@ int start_editor(char *filename, uint8_t filetype) {
 			else if kb_IsDown(kb_KeySin) {num = 14;}
 			else if kb_IsDown(kb_KeyCos) {num = 15;}
 			if (num != -1) {
+				if (num != num_prev) {repeattimer = 0;}
 				repeattimer++;
 				if (repeattimer == 1 || repeattimer > EDIT_REPEATTIMER) {
 				modified = true;
@@ -205,6 +209,7 @@ int start_editor(char *filename, uint8_t filetype) {
 			} else {
 				repeattimer = 0;
 			}
+			num_prev = num;
 		} else if (tab == 1) {
 			char pressed = 0;
 			bool s = kb_IsDown(kb_Key2nd);
@@ -318,6 +323,7 @@ int start_editor(char *filename, uint8_t filetype) {
 			}
 
 			if (pressed != 0) {
+				if (pressed != keypad_pr_prev) {repeattimer = 0;}
 				repeattimer++;
 				if (repeattimer == 1 || repeattimer > EDIT_REPEATTIMER) {
 					modified = true;
@@ -328,6 +334,8 @@ int start_editor(char *filename, uint8_t filetype) {
 			} else {
 				repeattimer = 0;
 			}
+
+			keypad_pr_prev = pressed;
 		}
 
 
