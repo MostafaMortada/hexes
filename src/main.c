@@ -22,6 +22,7 @@
 #include "fileselect.h"
 #include "editor.h"
 #include "headless.h"
+#include "colorpicker.h"
 //#include "gfx/gfx.h"
 
 int main(void) {
