@@ -170,15 +170,18 @@ int start_editor(char *filename, uint8_t filetype) {
 		}
 
 		uint24_t cursor_o_previous = cursor_o;
+		uint24_t scroll_previous = scroll;
 		if kb_IsDown(kb_KeyUp) {cursor_o-=8;}
 		if kb_IsDown(kb_KeyDown) {cursor_o+=8;}
 		if kb_IsDown(kb_KeyLeft) {cursor_o--;}
 		if kb_IsDown(kb_KeyRight) {cursor_o++;}
 
-		if (cursor_o > 0xFFFFF0) {cursor_o = 0;}
+		if (cursor_o > 0xFFFF00) {cursor_o = 0;}
 		if (cursor_o >= ti_GetSize(buf_h)) {cursor_o = ti_GetSize(buf_h) - 1;}
-		if (cursor_o < scroll*8) {scroll--; full_redraw = true;}
-		if (cursor_o >= (scroll + 21)*8) {scroll++; full_redraw = true;}
+		//if (cursor_o < scroll*8) {scroll--; full_redraw = true;}
+		//if (cursor_o >= (scroll + 21)*8) {scroll++; full_redraw = true;}
+		if (cursor_o < scroll*8) {scroll--;}
+		if (cursor_o >= (scroll + 21)*8) {scroll++;}
 
 		if (cursor_o != cursor_o_previous) {nibble = 0;}
 
@@ -389,6 +392,11 @@ int start_editor(char *filename, uint8_t filetype) {
 				gfx_Rectangle(252, 13, 69, 215);
 				break;
 		}
+
+		gfx_SetClipRegion(0, 0, 320, 240);
+		if (scroll < scroll_previous) {gfx_SetClipRegion(0, 16, 320, 216+10); gfx_ShiftDown(10);}
+		if (scroll > scroll_previous) {gfx_SetClipRegion(0, 16, 320, 216); gfx_ShiftUp(10);}
+		gfx_SetClipRegion(0, 0, 320, 240);
 
 		int row_min = full_redraw ? 0 : (cursor_o / 8) - scroll - 2;
 		int row_max = full_redraw ? 21 : (cursor_o / 8) - scroll + 3;
