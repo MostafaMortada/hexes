@@ -11,6 +11,7 @@
 
 #include "colorpicker.h"
 #include "defines.h"
+#include "globals.h"
 
 uint8_t colorpicker(uint8_t color) {
 	uint8_t drawloc = gfx_GetDraw();
@@ -24,9 +25,12 @@ uint8_t colorpicker(uint8_t color) {
 
 	uint8_t option = color;
 	bool ret = false;
+
+	while (kb_AnyKey());
+
 	while (!ret) {
 		kb_Scan();
-		if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {ret = true;}
+		if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {ret = true; break;}
 		if (kb_IsDown(kb_KeyClear)) {break;}
 		if kb_IsDown(kb_KeyUp) {option-=32;}
 		if kb_IsDown(kb_KeyDown) {option+=32;}

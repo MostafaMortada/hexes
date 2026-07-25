@@ -1,4 +1,4 @@
-#include "palette.h"
+#include "globals.h"
 
 uint8_t palette[16] = {
 	0  , // COLORS_BG
@@ -10,3 +10,4 @@ uint8_t palette[16] = {
 	30   // COLORS_80_FF
 };
 
+modifier_key_options_t modkeybehavior = MODIFIER_HOLD;

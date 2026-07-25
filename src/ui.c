@@ -11,6 +11,7 @@
 
 #include "ui.h"
 #include "defines.h"
+#include "globals.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <keypadc.h>
@@ -32,6 +33,8 @@ int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize) {
 	gfx_SetColor(COLORS_BG);
 	gfx_FillRectangle(x+2, y+2, olen * 8 - 4, menusize * 10 + 2);
 	gfx_Rectangle(x, y, olen * 8, menusize * 10 + 6);
+
+	while (kb_AnyKey());
 
 	int option = minopt;
 	for(;;) {

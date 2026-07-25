@@ -15,8 +15,10 @@
 #include "defines.h"
 #include "stdint.h"
 
+void load_config();
 
-//uint8_t *load_config
+void write_config();
 
+void config_menu();
 
 #endif

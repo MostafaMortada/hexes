@@ -19,6 +19,7 @@
 #include <ti/tokens.h>
 #include <ti/getkey.h>
 #include "defines.h"
+#include "globals.h"
 #include "fileselect.h"
 #include "editor.h"
 #include "headless.h"

@@ -11,6 +11,7 @@
 
 #include "editor.h"
 #include "defines.h"
+#include "globals.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <fileioc.h>
@@ -18,6 +19,7 @@
 #include <graphx.h>
 #include "dectohex.h"
 #include "ui.h"
+#include "config.h"
 
 //#define FRAMETIMER_BUF_START 50
 #define EDIT_REPEATTIMER 12
@@ -124,6 +126,7 @@ int start_editor(char *filename, uint8_t filetype) {
 					case 0:
 						break;
 					case 1:
+						config_menu();
 						break;
 					default:
 						break;

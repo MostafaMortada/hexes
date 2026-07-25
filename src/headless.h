@@ -13,6 +13,7 @@
 #define HEADLESS_H
 
 #include "defines.h"
+#include "globals.h"
 #include <stdint.h>
 #include <fileioc.h>
 #include <ti/vars.h>
