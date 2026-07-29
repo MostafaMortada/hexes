@@ -39,9 +39,17 @@ int start_editor(char *filename, uint8_t filetype) {
 
 	bool modified = false;
 
+	bool mod2nd = false;
+	bool modalpha = false;
+	bool modgvar = false; // XT(theta)n
+
+	bool uppercase = false;
+	bool lowercase = false;
+	bool bluemodifier = false;
+
 	//gfx_SetPalette(xlibc, 256, 0);
 	gfx_SetTransparentColor(MAGENTA);
-	gfx_SetTextTransparentColor(1);
+	gfx_SetTextTransparentColor(COLORS_BG+1);
 
 	gfx_FillScreen(COLORS_BG);
 
@@ -66,6 +74,28 @@ int start_editor(char *filename, uint8_t filetype) {
 
 	for (;;) {
 		kb_Scan();
+
+		bool mod2nd_p = mod2nd;
+		bool modalpha_p = modalpha;
+		bool modgvar_p = modgvar;
+
+		mod2nd = kb_IsDown(kb_Key2nd);
+		modalpha = kb_IsDown(kb_KeyAlpha); // uppercase
+		modgvar = kb_IsDown(kb_KeyGraphVar); // lowercase
+
+		switch (modkeybehavior) {
+			case MODIFIER_HOLD:
+				bluemodifier = mod2nd;
+				uppercase = modalpha;
+				lowercase = modgvar;
+				break;
+			default:
+				if (mod2nd && !mod2nd_p) bluemodifier = !bluemodifier;
+				if (modalpha && !modalpha_p) uppercase = !uppercase;
+				if (modgvar && !modgvar_p) lowercase = !lowercase;
+				break;
+		}
+
 		bool wanna_quit = false;
 
 		//if (frametimer > FRAMETIMER_BUF_START)
@@ -228,9 +258,9 @@ int start_editor(char *filename, uint8_t filetype) {
 			num_prev = num;
 		} else if (tab == 1) {
 			char pressed = 0;
-			bool s = kb_IsDown(kb_Key2nd);
-			bool u = kb_IsDown(kb_KeyAlpha); // uppercase
-			bool l = kb_IsDown(kb_KeyGraphVar); // lowercase
+			bool s = bluemodifier; //kb_IsDown(kb_Key2nd);
+			bool u = uppercase; //kb_IsDown(kb_KeyAlpha); // uppercase
+			bool l = lowercase; //kb_IsDown(kb_KeyGraphVar); // lowercase
 			bool k[] = {
 				0, 0, 0, 0, 0, 0, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0,
@@ -340,6 +370,7 @@ int start_editor(char *filename, uint8_t filetype) {
 
 			if (pressed != 0) {
 				if (pressed != keypad_pr_prev) {repeattimer = 0;}
+				if (modkeybehavior == MODIFIER_TOGGLE) {uppercase = false; lowercase = false; bluemodifier = false;}
 				repeattimer++;
 				if (repeattimer == 1 || repeattimer > EDIT_REPEATTIMER) {
 					modified = true;
@@ -371,6 +402,12 @@ int start_editor(char *filename, uint8_t filetype) {
 		if (modified) {
 			gfx_PrintString(" (modified)");
 		}
+
+		gfx_PrintStringXY("   ", 240, 2);
+		gfx_SetTextXY(240, 2);
+		if (bluemodifier) gfx_PrintString("^");
+		if (uppercase) gfx_PrintString("A");
+		if (lowercase) gfx_PrintString("a");
 
 		gfx_PrintStringXY("File", 0, 232);
 		gfx_PrintStringXY("Edit", 64, 232);
