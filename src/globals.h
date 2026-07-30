@@ -1,3 +1,14 @@
+/**
+ * --------------------------------------
+ *
+ * Hexes Source Code - globals.h
+ * By StephenM
+ * Copyright 2024 - 2026
+ * License: GPL-3.0
+ *
+ * --------------------------------------
+**/
+
 #ifndef GLOBALS_H
 #define GLOBALS_H
 

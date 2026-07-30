@@ -1,3 +1,14 @@
+/**
+ * --------------------------------------
+ *
+ * Hexes Source Code - globals.c
+ * By StephenM
+ * Copyright 2024 - 2026
+ * License: GPL-3.0
+ *
+ * --------------------------------------
+**/
+
 #include "globals.h"
 
 uint8_t palette[16] = {
