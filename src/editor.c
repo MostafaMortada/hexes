@@ -17,6 +17,8 @@
 #include <fileioc.h>
 #include <keypadc.h>
 #include <graphx.h>
+#include <ti/vars.h>
+#include "fileoper.h"
 #include "dectohex.h"
 #include "ui.h"
 #include "config.h"
@@ -59,8 +61,6 @@ int start_editor(char *filename, uint8_t filetype) {
 	gfx_SetMonospaceFont(8);
 
 	uint8_t buf_h = ti_Open(BUFFER_FILENAME, "r+");
-
-	//uint24_t frame = 0; // idk why this is here, probably leftover from BloxorzCE's code which I used as a baseline for this project for some fuckin reason
 
 	gfx_SetDrawBuffer();
 
@@ -117,9 +117,17 @@ int start_editor(char *filename, uint8_t filetype) {
 					"Close menu\0",
 				0, 11, 3);
 				switch (option) {
-					case 0:
+					case 0: {
+						uint8_t outfile = ti_OpenVar(filename, "r", filetype);
+						bool vararchived = ti_IsArchived(outfile);
+						ti_Close(outfile);
+						copyvar(BUFFER_FILENAME, OS_TYPE_APPVAR, filename, filetype);
+						outfile = ti_OpenVar(filename, "r", filetype);
+						ti_SetArchiveStatus(vararchived, outfile);
+						ti_Close(outfile);
 						modified = false;
 						break;
+					}
 					case 1:
 						wanna_quit = true;
 						break;
