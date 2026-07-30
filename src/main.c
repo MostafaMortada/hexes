@@ -5,7 +5,7 @@
  * By StephenM
  * Copyright 2024 - 2026
  * License: GPL-3.0
- * Version: 2.(1672026)
+ * Version: 2.betasomething
  *
  * --------------------------------------
 **/
@@ -20,6 +20,7 @@
 #include <ti/getkey.h>
 #include "defines.h"
 #include "globals.h"
+#include "fileoper.h"
 #include "fileselect.h"
 #include "editor.h"
 #include "headless.h"
@@ -41,11 +42,12 @@ int main(void) {
 	}
 
 	if (filename[0] >= 'A') {
-		uint8_t bufferh = ti_Open(BUFFER_FILENAME, "w");
+		/*uint8_t bufferh = ti_Open(BUFFER_FILENAME, "w");
 		uint8_t fileih = ti_OpenVar(filename, "r", filetype);
 		ti_Write(ti_GetDataPtr(fileih), ti_GetSize(fileih), 1, bufferh);
 		ti_Close(bufferh);
-		ti_Close(fileih);
+		ti_Close(fileih);*/
+		copyvar(filename, filetype, BUFFER_FILENAME, OS_TYPE_APPVAR);
 		start_editor(filename, filetype);
 	}
 
