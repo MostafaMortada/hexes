@@ -405,11 +405,11 @@ int start_editor(char *filename, uint8_t filetype) {
 		gfx_SetTextBGColor(COLORS_BG);
 		gfx_SetTextFGColor(COLORS_FG);
 		gfx_SetTextXY(2, 2);
-		gfx_PrintString("Hexes   ");
+		//gfx_PrintString("Hexes   ");
 		gfx_PrintString(filename);
-		if (modified) {
-			gfx_PrintString(" (modified)");
-		}
+		gfx_PrintString(modified ? " (modified)" : "           ");
+		gfx_PrintString("   ");
+		gfx_PrintUInt(cursor_o, 8);
 
 		//gfx_PrintStringXY("   ", 240, 2);
 		gfx_SetTextXY(296, 2);
