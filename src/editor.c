@@ -411,12 +411,17 @@ int start_editor(char *filename, uint8_t filetype) {
 			gfx_PrintString(" (modified)");
 		}
 
-		gfx_PrintStringXY("   ", 240, 2);
-		gfx_SetTextXY(240, 2);
-		if (bluemodifier) gfx_PrintString("^");
-		if (uppercase) gfx_PrintString("A");
-		if (lowercase) gfx_PrintString("a");
+		//gfx_PrintStringXY("   ", 240, 2);
+		gfx_SetTextXY(296, 2);
+		gfx_SetTextFGColor(bluemodifier? 20 : 9); // Blue
+		gfx_PrintChar(3);
+		gfx_SetTextFGColor(uppercase? 7 : 2); // Green
+		gfx_PrintString("A");
+		gfx_SetTextFGColor(lowercase? 7 : 2); // Green... again.
+		gfx_PrintString("a");
 
+		gfx_SetTextBGColor(COLORS_BG);
+		gfx_SetTextFGColor(COLORS_FG);
 		gfx_PrintStringXY("File", 0, 232);
 		gfx_PrintStringXY("Edit", 64, 232);
 		gfx_PrintStringXY("View", 132, 232);
