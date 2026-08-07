@@ -18,3 +18,11 @@ char hex_8b[768] = "00" "\0" "01" "\0" "02" "\0" "03" "\0" "04" "\0" "05" "\0" "
 char *dec_to_hex_u8b(uint8_t num) {
 	return hex_8b + num * 3;
 }
+
+char **dec_to_hex_u24b(uint24_t num) { // yes this is janky as fuck but whatever
+	char *out[3];
+	out[0] = dec_to_hex_u8b((num & 0xFF0000) >> 4);
+	out[1] = dec_to_hex_u8b((num & 0x00FF00) >> 2);
+	out[2] = dec_to_hex_u8b(num & 0x0000FF);
+	return out;
+}

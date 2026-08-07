@@ -17,4 +17,6 @@ extern char hex_8b [768];
 
 char *dec_to_hex_u8b(uint8_t num);
 
+char **dec_to_hex_u24b(uint24_t num);
+
 #endif
