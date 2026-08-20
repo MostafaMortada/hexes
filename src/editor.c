@@ -460,53 +460,57 @@ int start_editor(char *filename, uint8_t filetype) {
 			for (uint24_t o = 0; o < 8; o++) {
 				uint24_t offset = (i+scroll)*8+o;
 				if (offset < ti_GetSize(buf_h)) {
-				bool selected = offset == cursor_o;
-				char c;
-				ti_Read(&c, 1, 1, buf_h);
-				uint8_t num = (uint8_t)c;
-				//uint8_t num = *(uint8_t*)b;
-				/*if (selected) {
-					gfx_SetTextFGColor(COLORS_BG);
-				} else*/
-				uint8_t color = COLORS_FG;
-				if (num == 0) {color = COLORS_NULL;}
-				else if (num < 0x20) {color = COLORS_01_1F;}
-				else if (num < 0x80) {color = COLORS_20_7F;}
-				else {color = COLORS_80_FF;}
-				gfx_SetTextFGColor(color);
+					bool selected = offset == cursor_o;
+					char c;
+					ti_Read(&c, 1, 1, buf_h);
+					uint8_t num = (uint8_t)c;
+					//uint8_t num = *(uint8_t*)b;
+					/*if (selected) {
+						gfx_SetTextFGColor(COLORS_BG);
+					} else*/
+					uint8_t color = COLORS_FG;
+					if (num == 0) {color = COLORS_NULL;}
+					else if (num < 0x20) {color = COLORS_01_1F;}
+					else if (num < 0x80) {color = COLORS_20_7F;}
+					else {color = COLORS_80_FF;}
+					gfx_SetTextFGColor(color);
 
-				/*if (selected) {
-					gfx_SetColor(COLORS_CURSOR);
-					gfx_Rectangle(83 + o * 20 + nibble * 10, i*10 + 15, 8, 10);
-				}*/
-				//gfx_SetTextXY(80 + o * 20, i*10 + 16);
-				gfx_SetTextXY(84 + o * 20, i*10 + 16);
-				char *sub = dec_to_hex_u8b(num);
-				if (selected) {
-					for (int ch = 0; ch < 2; ch++) {
-						if (ch == nibble) {
-							gfx_SetTextBGColor(COLORS_CURSOR);
-							gfx_SetTextFGColor(COLORS_BG);
-						} else {
-							gfx_SetTextBGColor(COLORS_BG);
-							gfx_SetTextFGColor(color);
+					/*if (selected) {
+						gfx_SetColor(COLORS_CURSOR);
+						gfx_Rectangle(83 + o * 20 + nibble * 10, i*10 + 15, 8, 10);
+					}*/
+					//gfx_SetTextXY(80 + o * 20, i*10 + 16);
+					gfx_SetTextXY(84 + o * 20, i*10 + 16);
+					char *sub = dec_to_hex_u8b(num);
+					if (selected) {
+						for (int ch = 0; ch < 2; ch++) {
+							if (ch == nibble) {
+								gfx_SetTextBGColor(COLORS_CURSOR);
+								gfx_SetTextFGColor(COLORS_BG);
+							} else {
+								gfx_SetTextBGColor(COLORS_BG);
+								gfx_SetTextFGColor(color);
+							}
+							gfx_PrintChar(sub[ch]);
 						}
-						gfx_PrintChar(sub[ch]);
+					} else {
+						gfx_PrintString(sub);
 					}
+					if (selected) {
+						gfx_SetTextBGColor(COLORS_CURSOR);
+						gfx_SetTextFGColor(COLORS_BG);
+					}
+					gfx_SetTextXY(256 + o * 8, i*10 + 16);
+					if (num <= 127) {
+						gfx_PrintChar(c);
+					} else {
+						gfx_PrintChar('.');
+					}
+					if (selected) { gfx_SetTextBGColor(COLORS_BG); }
 				} else {
-					gfx_PrintString(sub);
-				}
-				if (selected) {
-					gfx_SetTextBGColor(COLORS_CURSOR);
-					gfx_SetTextFGColor(COLORS_BG);
-				}
-				gfx_SetTextXY(256 + o * 8, i*10 + 16);
-				if (num <= 127) {
-					gfx_PrintChar(c);
-				} else {
-					gfx_PrintChar('.');
-				}
-				if (selected) { gfx_SetTextBGColor(COLORS_BG); }
+					gfx_SetTextBGColor(COLORS_BG);
+					gfx_PrintStringXY(" ", 256 + o * 8, i * 10 + 16);
+					gfx_PrintStringXY("  ", 84 + o * 20, i * 10 + 16);
 				}
 			}
 		}
