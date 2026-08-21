@@ -14,9 +14,11 @@
 
 #include "defines.h"
 #include <stdint.h>
+#include <stdbool.h>
 
 extern uint8_t palette[];
 extern modifier_key_options_t modkeybehavior;
+extern bool hex_addresses;
 
 #define COLORS_BG (palette[0])
 #define COLORS_FG (palette[1])

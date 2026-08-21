@@ -17,6 +17,7 @@
 #include <fileioc.h>
 #include <keypadc.h>
 #include <graphx.h>
+#include <string.h>
 #include "ui.h"
 #include "colorpicker.h"
 
@@ -40,27 +41,18 @@ void config_menu() {
 
 		gfx_SetTextBGColor(COLORS_BG);
 		gfx_SetTextFGColor(COLORS_FG);
-		gfx_SetTextXY(208, 30);
-		gfx_PrintString("> ");
 
-		switch (modkeybehavior) {
-			case MODIFIER_TOGGLE:
-				gfx_PrintString("Toggle");
-				break;
-			case MODIFIER_TOGGLE_LOCK:
-				gfx_PrintString("Toggle lock");
-				break;
-			case MODIFIER_HOLD:
-				gfx_PrintString("Hold");
-				break;
-		}
-
-		int option = ui_menu(2, 2,
-			"CONFIGURATION MENU      \0"
-			"Color palette           \0"
-			"Modifier keys           \0"
-			"Exit menu               \0",
-		1, 25, 4);
+		char optlist[] =
+			"CONFIGURATION MENU              \0"
+			"Color palette                   \0"
+			"Modifier keys   ?               \0"
+			"Addresses       ?               \0"
+			"Exit menu                       \0";
+		
+		strcpy(optlist + 66 + 16, ("<   Toggle    > \0" "< Toggle lock > \0" "<    Hold     > \0") + modkeybehavior * 17); // Modifier key option
+		strcpy(optlist + 99 + 16, hex_addresses ? "< Hexadecimal > \0" : "<   Decimal   > \0");
+		
+		int option = ui_menu(2, 2, optlist, 1, 33, 5);
 
 		switch (option) {
 			case 1: {
@@ -104,9 +96,10 @@ void config_menu() {
 				modkeybehavior = (modkeybehavior + 1) % 3;
 				break;
 			case 3:
-				exit = true;
+				hex_addresses = ! hex_addresses;
 				break;
 			default:
+				exit = true;
 				break;
 		}
 	}

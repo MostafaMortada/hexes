@@ -22,3 +22,5 @@ uint8_t palette[16] = {
 };
 
 modifier_key_options_t modkeybehavior = MODIFIER_HOLD;
+
+bool hex_addresses = false;
