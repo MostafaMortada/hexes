@@ -21,9 +21,28 @@
 #include "ui.h"
 #include "colorpicker.h"
 
-void load_config() {}
+void load_config() {
+	uint8_t cfg = ti_Open(CONFIG_FILENAME, "r");
+	if (cfg != 0) {
+		ti_Read(palette, 8, 1, cfg);
+		ti_Read(&modkeybehavior, 1, 1, cfg);
+		uint8_t ha = 0;
+		ti_Read(&ha, 1, 1, cfg);
+		hex_addresses = ha != 0;
+		ti_Close(cfg);
+	}
+	return;
+}
 
-void write_config() {}
+void write_config() {
+	uint8_t cfg = ti_Open(CONFIG_FILENAME, "w");
+	ti_Write(palette, 8, 1, cfg);
+	ti_Write(&modkeybehavior, 1, 1, cfg);
+	uint8_t ha = hex_addresses ? 1 : 0;
+	ti_Write(&ha, 1, 1, cfg);
+	ti_Close(cfg);
+	return;
+}
 
 void config_menu() {
 	uint8_t drawloc = gfx_GetDraw();
@@ -56,24 +75,28 @@ void config_menu() {
 
 		switch (option) {
 			case 1: {
+				gfx_FillScreen(COLORS_BG);
 				for (;;) {
 					//while (kb_AnyKey());
-					gfx_FillScreen(COLORS_BG);
+					gfx_SetTextBGColor(COLORS_FG);
+					gfx_SetTextFGColor(COLORS_BG);
+					gfx_PrintStringXY(" COLOR PALETTE ", 0, 0);
 					gfx_SetTextBGColor(COLORS_BG);
 					gfx_SetTextFGColor(COLORS_FG);
-					gfx_PrintStringXY("COLOR PALETTE", 0, 0);
 					gfx_PrintStringXY("[1] Foreground", 0, 20);
 					gfx_PrintStringXY("[2] Background", 0, 30);
 					gfx_SetTextFGColor(COLORS_CURSOR);
 					gfx_PrintStringXY("[3] Cursor", 0, 40);
+					gfx_SetTextFGColor(COLORS_FG);
+					gfx_PrintStringXY("IN EDITOR:", 0, 50);
 					gfx_SetTextFGColor(COLORS_NULL);
-					gfx_PrintStringXY("[4] IN-EDITOR: Null bytes (0x00)", 0, 50);
+					gfx_PrintStringXY("[4] Null bytes (0x00)", 10, 60);
 					gfx_SetTextFGColor(COLORS_01_1F);
-					gfx_PrintStringXY("[5] IN-EDITOR: ASCII control codes (0x01 - 0x1F)", 0, 60);
+					gfx_PrintStringXY("[5] ASCII control codes (0x01 - 0x1F)", 10, 70);
 					gfx_SetTextFGColor(COLORS_20_7F);
-					gfx_PrintStringXY("[6] IN-EDITOR: Displayable ASCII glyphs (0x20 - 0x7F)", 0, 70);
+					gfx_PrintStringXY("[6] Displayable glyphs  (0x20 - 0x7F)", 10, 80);
 					gfx_SetTextFGColor(COLORS_80_FF);
-					gfx_PrintStringXY("[7] IN-EDITOR: The rest (0x80 - 0xFF)", 0, 80);
+					gfx_PrintStringXY("[7] The rest            (0x80 - 0xFF)", 10, 90);
 
 					kb_Scan();
 					uint8_t edcol_pal = 255;
@@ -87,6 +110,7 @@ void config_menu() {
 					if kb_IsDown(kb_Key7) edcol_pal = 6;
 					if (edcol_pal != 255) {
 						palette[edcol_pal] = colorpicker(palette[edcol_pal]);
+						gfx_FillScreen(COLORS_BG);
 					}
 					while (!kb_AnyKey());
 				}

@@ -16,6 +16,7 @@
 #include <stdint.h>
 
 #define BUFFER_FILENAME ("HEXESBUF")
+#define CONFIG_FILENAME ("HEXESCFG")
 
 //#define max(a, b) ((a) > (b) ? (a) : (b))
 //#define min(a, b) ((a) < (b) ? (a) : (b))

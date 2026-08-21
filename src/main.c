@@ -25,6 +25,7 @@
 #include "editor.h"
 #include "headless.h"
 #include "colorpicker.h"
+#include "config.h"
 //#include "gfx/gfx.h"
 
 int main(void) {
@@ -36,6 +37,8 @@ int main(void) {
 	gfx_Begin();
 	gfx_SetFontData(font);
 	kb_SetMode(MODE_3_CONTINUOUS);
+
+	load_config();
 
 	if (filename[0] < 'A') {
 		filename = fileselectmenu(&filetype);
@@ -52,6 +55,7 @@ int main(void) {
 	}
 
 	gfx_End();
+	write_config();
 
 	return 0;
 }
