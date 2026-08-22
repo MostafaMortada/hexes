@@ -51,7 +51,7 @@ int start_editor(char *filename, uint8_t filetype) {
 
 	//gfx_SetPalette(xlibc, 256, 0);
 	gfx_SetTransparentColor(MAGENTA);
-	gfx_SetTextTransparentColor(COLORS_BG+1);
+	gfx_SetTextTransparentColor(ret_text_trans_color());
 
 	gfx_FillScreen(COLORS_BG);
 
@@ -400,7 +400,12 @@ int start_editor(char *filename, uint8_t filetype) {
 			gfx_SetDrawScreen();
 		}
 
-		if (full_redraw) {gfx_FillScreen(COLORS_BG);}
+		if (full_redraw) {
+			gfx_FillScreen(COLORS_BG);
+			gfx_SetColor(COLORS_BG2);
+			gfx_FillRectangle(0, 11, 70, 218);
+			gfx_FillRectangle(250, 11, 70, 218);
+		}
 
 		gfx_SetTextBGColor(COLORS_BG);
 		gfx_SetTextFGColor(COLORS_FG);
@@ -437,9 +442,11 @@ int start_editor(char *filename, uint8_t filetype) {
 		switch (tab) {
 			case 0:
 				gfx_Rectangle(72, 13, 177, 215);
+				gfx_Rectangle(73, 14, 175, 213);
 				break;
 			case 1:
 				gfx_Rectangle(252, 13, 69, 215);
+				gfx_Rectangle(253, 14, 68, 213);
 				break;
 		}
 
@@ -455,6 +462,7 @@ int start_editor(char *filename, uint8_t filetype) {
 		ti_Seek((scroll + row_min) * 8, SEEK_SET, buf_h);
 		for (uint24_t i = row_min; i < row_max; i++) {
 			gfx_SetTextFGColor(COLORS_FG);
+			gfx_SetTextBGColor(COLORS_BG2);
 			gfx_SetTextXY(2, i*10 + 16);
 			gfx_PrintUInt((i+scroll) * 8, 8);
 			for (uint24_t o = 0; o < 8; o++) {
@@ -474,7 +482,7 @@ int start_editor(char *filename, uint8_t filetype) {
 					else if (num < 0x80) {color = COLORS_20_7F;}
 					else {color = COLORS_80_FF;}
 					gfx_SetTextFGColor(color);
-
+					gfx_SetTextBGColor(COLORS_BG);
 					/*if (selected) {
 						gfx_SetColor(COLORS_CURSOR);
 						gfx_Rectangle(83 + o * 20 + nibble * 10, i*10 + 15, 8, 10);
@@ -496,6 +504,7 @@ int start_editor(char *filename, uint8_t filetype) {
 					} else {
 						gfx_PrintString(sub);
 					}
+					gfx_SetTextBGColor(COLORS_BG2);
 					if (selected) {
 						gfx_SetTextBGColor(COLORS_CURSOR);
 						gfx_SetTextFGColor(COLORS_BG);

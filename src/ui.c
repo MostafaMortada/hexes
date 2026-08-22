@@ -46,7 +46,7 @@ int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize) {
 		if (option >= menusize) {option = minopt;}
 
 		for (int i = 0; i < menusize; i++) {
-			gfx_SetTextTransparentColor(MAGENTA);
+			//gfx_SetTextTransparentColor(MAGENTA);
 			gfx_SetTextFGColor(i == option ? COLORS_BG : COLORS_FG);
 			gfx_SetTextBGColor(i == option ? COLORS_FG : COLORS_BG);
 			gfx_PrintStringXY(opt + i * olen, x + 4, y + 4 + i * 10);

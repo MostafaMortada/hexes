@@ -40,13 +40,16 @@ uint8_t colorpicker(uint8_t color) {
 		for (int i = 0; i < 32; i++) {
 			for (int o = 0; o < 8; o++) {
 				gfx_SetColor(o * 32 + i);
-				gfx_FillRectangle(10 * i, 10 * o, 10, 10);
+				gfx_FillRectangle(10 * i, 10 * o + 120, 10, 10);
 				if (option == o * 32 + i) {
-					gfx_SetColor(COLORS_CURSOR);
-					gfx_Rectangle(10 * i, 10 * o, 10, 10);
+					gfx_SetColor(255 - option);
+					gfx_Rectangle(10 * i + 1, 10 * o + 121, 8, 8);
+					gfx_Rectangle(10 * i, 10 * o + 120, 10, 10);
 				}
 			}
 		}
+		gfx_SetColor(option);
+		gfx_FillRectangle(0, 80 + 120, 320, 40);
 
 		delay(24); // delay because its too fuckin fast to control otherwise
 	}

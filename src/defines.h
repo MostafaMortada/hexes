@@ -21,6 +21,8 @@
 //#define max(a, b) ((a) > (b) ? (a) : (b))
 //#define min(a, b) ((a) < (b) ? (a) : (b))
 
+#define PALETTE_SIZE 8
+
 // Some colors
 #define BLACK	0
 #define WHITE	255

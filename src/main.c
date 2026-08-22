@@ -39,6 +39,9 @@ int main(void) {
 	kb_SetMode(MODE_3_CONTINUOUS);
 
 	load_config();
+	
+	gfx_SetTextTransparentColor(ret_text_trans_color());
+	
 
 	if (filename[0] < 'A') {
 		filename = fileselectmenu(&filetype);

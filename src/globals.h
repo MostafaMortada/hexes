@@ -17,6 +17,7 @@
 #include <stdbool.h>
 
 extern uint8_t palette[];
+uint8_t ret_text_trans_color();
 extern modifier_key_options_t modkeybehavior;
 extern bool hex_addresses;
 
@@ -27,5 +28,6 @@ extern bool hex_addresses;
 #define COLORS_01_1F (palette[4])
 #define COLORS_20_7F (palette[5])
 #define COLORS_80_FF (palette[6])
+#define COLORS_BG2 (palette[7])
 
 #endif
