@@ -32,7 +32,7 @@ int main(void) {
 
 	uint8_t filetype;
 
-	char *filename = check_for_ans(&filetype);
+	char *filename = check_for_ans(&filetype); // headless start
 
 	gfx_Begin();
 	gfx_SetFontData(font);
@@ -42,8 +42,7 @@ int main(void) {
 	
 	gfx_SetTextTransparentColor(ret_text_trans_color());
 	
-
-	if (filename[0] < 'A') {
+	if (filename[0] < 'A') { // this only executes if headless start failed
 		filename = fileselectmenu(&filetype);
 	}
 
@@ -55,6 +54,7 @@ int main(void) {
 		ti_Close(fileih);*/
 		copyvar(filename, filetype, BUFFER_FILENAME, OS_TYPE_APPVAR);
 		start_editor(filename, filetype);
+		// reminder to delete HEXESBUF once this ends or smth
 	}
 
 	gfx_End();

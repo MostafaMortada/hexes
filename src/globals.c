@@ -22,7 +22,7 @@ uint8_t palette[PALETTE_SIZE] = {
 	8  , // COLORS_BG2
 };
 
-uint8_t ret_text_trans_color() {
+uint8_t ret_text_trans_color() { // because FOR SOME FUCKING REASON I CAN'T DISABLE THE TEXT TRANSPARENT COLOR ALTOGETHER
 	uint8_t a = 0;
 	for(;;) {
 		uint8_t ap = a;

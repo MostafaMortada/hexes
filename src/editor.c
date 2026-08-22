@@ -36,10 +36,10 @@ int start_editor(char *filename, uint8_t filetype) {
 
 	int tab = 0; // 0 for editing hex digits, 1 for editing ascii
 
-	int frametimer = 0;
+	int frametimer = 0; // unused, will probably be removed later
 	int repeattimer = 0;
 
-	bool modified = false;
+	bool modified = false; // file is modified (no shit)
 
 	bool mod2nd = false;
 	bool modalpha = false;
@@ -58,7 +58,7 @@ int start_editor(char *filename, uint8_t filetype) {
 	gfx_SetTextFGColor(COLORS_FG);
 	gfx_SetTextBGColor(COLORS_BG);
 
-	gfx_SetMonospaceFont(8);
+	gfx_SetMonospaceFont(8); // i love me some <monospace>
 
 	uint8_t buf_h = ti_Open(BUFFER_FILENAME, "r+");
 
@@ -66,6 +66,7 @@ int start_editor(char *filename, uint8_t filetype) {
 
 	while (kb_AnyKey()); // key debouncing
 
+	// this is for key repeat purposes in byte editing and character editing mode respectively
 	int num_prev = -1;
 	char keypad_pr_prev = '\0';
 
@@ -75,6 +76,7 @@ int start_editor(char *filename, uint8_t filetype) {
 	for (;;) {
 		kb_Scan();
 
+		// previous values
 		bool mod2nd_p = mod2nd;
 		bool modalpha_p = modalpha;
 		bool modgvar_p = modgvar;
@@ -96,7 +98,7 @@ int start_editor(char *filename, uint8_t filetype) {
 				break;
 		}
 
-		bool wanna_quit = false;
+		bool wanna_quit = false; // obvious what this does ig; set this flag if user does anything to quit and then act accordingly
 
 		//if (frametimer > FRAMETIMER_BUF_START)
 		{
@@ -109,7 +111,7 @@ int start_editor(char *filename, uint8_t filetype) {
 				full_redraw = true;
 			}
 
-			if kb_IsDown(kb_KeyYequ) {
+			if kb_IsDown(kb_KeyYequ) { // File
 				full_redraw = true;
 				int option = ui_menu(2, 190,
 					"Save      \0"
@@ -136,7 +138,7 @@ int start_editor(char *filename, uint8_t filetype) {
 				}
 			}
 
-			if kb_IsDown(kb_KeyWindow) {
+			if kb_IsDown(kb_KeyWindow) { // Edit
 				full_redraw = true;
 				int option = ui_menu(48, 190,
 					"Option 1  \0"
@@ -153,7 +155,7 @@ int start_editor(char *filename, uint8_t filetype) {
 				}
 			}
 
-			if kb_IsDown(kb_KeyZoom) {
+			if kb_IsDown(kb_KeyZoom) { // View
 				full_redraw = true;
 				int option = ui_menu(100, 190,
 					"Option 1     \0"
@@ -171,7 +173,7 @@ int start_editor(char *filename, uint8_t filetype) {
 				}
 			}
 
-			if kb_IsDown(kb_KeyTrace) {
+			if kb_IsDown(kb_KeyTrace) { // Navigate
 				full_redraw = true;
 				int option = ui_menu(180, 190,
 					"Go to address\0"
@@ -188,7 +190,7 @@ int start_editor(char *filename, uint8_t filetype) {
 				}
 			}
 
-			if kb_IsDown(kb_KeyGraph) {
+			if kb_IsDown(kb_KeyGraph) { // Help
 				full_redraw = true;
 				int option = ui_menu(206, 180,
 					"About        \0"
@@ -214,6 +216,7 @@ int start_editor(char *filename, uint8_t filetype) {
 		if kb_IsDown(kb_KeyLeft) {cursor_o--;}
 		if kb_IsDown(kb_KeyRight) {cursor_o++;}
 
+		// bound checking for cursor position
 		if (cursor_o > 0xFFFF00) {cursor_o = 0;}
 		if (cursor_o >= ti_GetSize(buf_h)) {cursor_o = ti_GetSize(buf_h) - 1;}
 		//if (cursor_o < scroll*8) {scroll--; full_redraw = true;}
@@ -223,7 +226,7 @@ int start_editor(char *filename, uint8_t filetype) {
 
 		if (cursor_o != cursor_o_previous) {nibble = 0;}
 
-		if (tab == 0) {
+		if (tab == 0) { // byte editing mode
 			int num = -1;
 			if kb_IsDown(kb_Key0) {num = 0;}
 			else if kb_IsDown(kb_Key1) {num = 1;}
@@ -264,12 +267,12 @@ int start_editor(char *filename, uint8_t filetype) {
 				repeattimer = 0;
 			}
 			num_prev = num;
-		} else if (tab == 1) {
+		} else if (tab == 1) { // character editing mode
 			char pressed = 0;
-			bool s = bluemodifier; //kb_IsDown(kb_Key2nd);
-			bool u = uppercase; //kb_IsDown(kb_KeyAlpha); // uppercase
-			bool l = lowercase; //kb_IsDown(kb_KeyGraphVar); // lowercase
-			bool k[] = {
+			bool s = bluemodifier; // shift / 2nd
+			bool u = uppercase; // uppercase (duh)
+			bool l = lowercase; // lowercase (duh)
+			bool k[] = { // Long ass keyboard map with key combinations for most characters in the ASCII table
 				0, 0, 0, 0, 0, 0, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0,
@@ -393,6 +396,9 @@ int start_editor(char *filename, uint8_t filetype) {
 			keypad_pr_prev = pressed;
 		}
 
+		/*                         *
+		 * ! GRAPHICS OPERATIONS ! *
+		 *                         */
 
 		if (full_redraw) {
 			gfx_SetDrawBuffer();
@@ -417,13 +423,34 @@ int start_editor(char *filename, uint8_t filetype) {
 		gfx_PrintUInt(cursor_o, 8);
 
 		//gfx_PrintStringXY("   ", 240, 2);
+		gfx_SetColor(BLACK);
+		gfx_FillRectangle(294, 0, 32, 11);
 		gfx_SetTextXY(296, 2);
+		gfx_SetTextBGColor(BLACK);
 		gfx_SetTextFGColor(bluemodifier? 20 : 9); // Blue
-		gfx_PrintChar(3);
+		gfx_PrintChar(3); // Upwards arrow
 		gfx_SetTextFGColor(uppercase? 7 : 2); // Green
 		gfx_PrintString("A");
 		gfx_SetTextFGColor(lowercase? 7 : 2); // Green... again.
 		gfx_PrintString("a");
+		/*
+ __---'')
+'--'''|
+ _'--'''''\
+|   --'''.  \
+|  |  _.-.\  \
+ |  \(_,-' |  |__
+ |   \  -' |  |  \
+  |_,_\''' |-'    |
+ ||    |  \    |  |
+ ||    |   |   |   |
+ ||    |   |   |___|
+/  |    |   |   /    \
+U, |     |  |   U\   ,|
+ \_L_____L__L____/_|-'
+  /      /      |
+  \___---\___---' [StM]
+		*/
 
 		gfx_SetTextBGColor(COLORS_BG);
 		gfx_SetTextFGColor(COLORS_FG);
@@ -439,7 +466,7 @@ int start_editor(char *filename, uint8_t filetype) {
 		gfx_VertLine(70, 11, 218);
 		gfx_VertLine(250, 11, 218);
 		gfx_SetColor(COLORS_CURSOR);
-		switch (tab) {
+		switch (tab) { // mmm highlight box
 			case 0:
 				gfx_Rectangle(72, 13, 177, 215);
 				gfx_Rectangle(73, 14, 175, 213);
@@ -455,12 +482,13 @@ int start_editor(char *filename, uint8_t filetype) {
 		if (scroll > scroll_previous) {gfx_SetClipRegion(0, 16, 320, 216); gfx_ShiftUp(10);}
 		gfx_SetClipRegion(0, 0, 320, 240);
 
+		// if full redraw, make it draw all rows on screen (no shit), otherwise, only draw 2 rows around the cursor
 		int row_min = full_redraw ? 0 : (cursor_o / 8) - scroll - 2;
 		int row_max = full_redraw ? 21 : (cursor_o / 8) - scroll + 3;
 		if (row_min < 0) {row_min = 0;}
 		if (row_max > 21) {row_max = 21;}
 		ti_Seek((scroll + row_min) * 8, SEEK_SET, buf_h);
-		for (uint24_t i = row_min; i < row_max; i++) {
+		for (uint24_t i = row_min; i < row_max; i++) { // main hex drawing loop thingy
 			gfx_SetTextFGColor(COLORS_FG);
 			gfx_SetTextBGColor(COLORS_BG2);
 			gfx_SetTextXY(2, i*10 + 16);
@@ -503,7 +531,7 @@ int start_editor(char *filename, uint8_t filetype) {
 						}
 					} else {
 						gfx_PrintString(sub);
-					}
+					} // comment
 					gfx_SetTextBGColor(COLORS_BG2);
 					if (selected) {
 						gfx_SetTextBGColor(COLORS_CURSOR);

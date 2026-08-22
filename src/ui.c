@@ -21,7 +21,7 @@
 /*
 void ui_message(int x, int y, int type, char *str) {
 	// i'll do it later lmao
-}*/
+}*/ // actually this function will never be done later cuz i can just do that with the ui_menu function lmao :p
 
 
 int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize) {
