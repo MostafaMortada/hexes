@@ -22,6 +22,11 @@
 #include <ti/vars.h>
 #include <string.h>
 
+#define TAB_COUNT 3
+#define ITEM_COUNT 20 // 18 // How many file names on-screen
+//#define LIST_Y 44
+#define LIST_Y 26
+
 char *fileselectmenu(uint8_t *outfiletype) {
 	uint24_t cursor = 0;
 	uint24_t scroll = 0;
@@ -38,7 +43,7 @@ char *fileselectmenu(uint8_t *outfiletype) {
 
 	int tab = 0;
 
-	char namelist[256][9] = {};
+	static char namelist[256][9] = {};
 
 	for (;;) {
 		uint8_t filetype;
@@ -111,13 +116,17 @@ char *fileselectmenu(uint8_t *outfiletype) {
 		for (;;) {
 			gfx_SetDrawBuffer();
 			gfx_FillScreen(COLORS_BG);
+
+			gfx_SetTextFGColor(COLORS_FG);
+			gfx_SetTextBGColor(COLORS_BG);
+
 			gfx_PrintStringXY("Open", 0, 232);
 			gfx_PrintStringXY("<<<", 75, 232);
 			gfx_PrintStringXY(">>>", 145, 232);
 			//gfx_SetTextXY(10, 10);
 			//gfx_PrintUInt(tab, 2);
 
-			for (int i = 0; i <= 11; i++) {
+			for (int i = 0; i < TAB_COUNT; i++) {
 				/*if (i == 0) {
 					gfx_SetTextXY(0, 10);
 				} else if (i == 5) {
@@ -170,23 +179,24 @@ char *fileselectmenu(uint8_t *outfiletype) {
 				}
 			}
 
-			gfx_SetTextFGColor(COLORS_FG);
-			gfx_SetTextBGColor(COLORS_BG);
-
-			for (int i = 0; i < 18; i++) {
+			for (int i = 0; i < ITEM_COUNT; i++) {
 				if (i + scroll < namelistsize) {
 					if (i + scroll == cursor) {
-						gfx_PrintStringXY(">", 32, i * 10 + 44);
+						//gfx_PrintStringXY(">", 32, i * 10 + 44);
+						gfx_SetColor(COLORS_CURSOR);
+						gfx_FillRectangle(32, i * 10 + LIST_Y - 2, 128 + 16, 11);
 					}
+					gfx_SetTextFGColor(i + scroll == cursor ? COLORS_BG : COLORS_FG);
+					gfx_SetTextBGColor(i + scroll == cursor ? COLORS_CURSOR : COLORS_BG);
 					uint8_t han = ti_OpenVar(namelist[i + scroll], "r", filetype);
 					if (ti_IsArchived(han) != 0) {
-						gfx_PrintStringXY("*", 40, i * 10 + 44);
+						gfx_PrintStringXY("*", 40, i * 10 + LIST_Y);
 					}
-					gfx_SetTextXY(128, i * 10 + 44);
+					gfx_SetTextXY(128, i * 10 + LIST_Y);
 					gfx_PrintUInt(ti_GetSize(han), 5);
 					ti_Close(han);
 					char *name = namelist[i + scroll];
-					gfx_SetTextXY(48, i*10 + 44);
+					gfx_SetTextXY(48, i*10 + LIST_Y);
 					switch (name[0]) {
 						case 0x5D: // List
 							if (name[1] < 6) {
@@ -213,20 +223,33 @@ char *fileselectmenu(uint8_t *outfiletype) {
 				}
 			}
 
+			// Draw scroll bar
+			gfx_SetColor(COLORS_FG);
+			gfx_Rectangle(10, LIST_Y, 6, ITEM_COUNT * 10);
+			gfx_FillRectangle(12, LIST_Y + 2 + (ITEM_COUNT * 10 * scroll) / namelistsize, 2, ((ITEM_COUNT * 10 - 4) * ITEM_COUNT) / namelistsize - 2);
+
 			gfx_SwapDraw();
 
 
 			if kb_IsDown(kb_KeyClear) {return "1";}
 			if kb_IsDown(kb_KeyYequ) {*outfiletype = filetype; return namelist[cursor];}
-			if kb_IsDown(kb_KeyWindow) {tab--; break;}
-			if kb_IsDown(kb_KeyZoom) {tab++; break;}
+			if kb_IsDown(kb_KeyWindow) {
+				tab--; 
+				if (tab < 0) {tab = 0;}
+				break;
+			}
+			if kb_IsDown(kb_KeyZoom) {
+				tab++;
+				if (tab >= TAB_COUNT) {tab = TAB_COUNT-1;}
+				break;
+			}
 
 			if kb_IsDown(kb_KeyDown) {cursor++;}
 			if kb_IsDown(kb_KeyUp) {cursor--;}
 			if (cursor < scroll) {scroll--;}
-			if (cursor > 1000) {cursor = namelistsize - 1; scroll = namelistsize >= 18 ? cursor - 18 : scroll;}
+			if (cursor > 1000) {cursor = namelistsize - 1; scroll = namelistsize >= ITEM_COUNT ? cursor - ITEM_COUNT : scroll;}
 			if (namelist[cursor][0] == '\0') {cursor = 0; scroll = 0;}
-			if (cursor > scroll + 17) {scroll++;}
+			if (cursor > scroll + ITEM_COUNT - 1) {scroll++;}
 
 			//while (!kb_AnyKey());
 		}
