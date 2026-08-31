@@ -25,6 +25,7 @@
 
 //#define FRAMETIMER_BUF_START 50
 #define EDIT_REPEATTIMER 12
+#define ARROW_REPEATTIMER 9
 
 int start_editor(char *filename, uint8_t filetype) {
 
@@ -38,8 +39,14 @@ int start_editor(char *filename, uint8_t filetype) {
 
 	int frametimer = 0; // unused, will probably be removed later
 	int repeattimer = 0;
+	int arrowrepeattimer = 0;
 
 	bool modified = false; // file is modified (no shit)
+
+	bool keydownUp = false;
+	bool keydownDown = false;
+	bool keydownLeft = false;
+	bool keydownRight = false;
 
 	bool mod2nd = false;
 	bool modalpha = false;
@@ -209,12 +216,43 @@ int start_editor(char *filename, uint8_t filetype) {
 			}
 		}
 
+		bool prevkeydownUp = keydownUp;
+		bool prevkeydownDown = keydownDown;
+		bool prevkeydownLeft = keydownLeft;
+		bool prevkeydownRight = keydownRight;
+		keydownUp = kb_IsDown(kb_KeyUp);
+		keydownDown = kb_IsDown(kb_KeyDown);
+		keydownLeft = kb_IsDown(kb_KeyLeft);
+		keydownRight = kb_IsDown(kb_KeyRight);
+		uint8_t arrowkeys = 0;
+		if (keydownUp || keydownDown || keydownLeft || keydownRight) {
+			arrowkeys =
+				(keydownUp    ? 1 << 0 : 0) |
+				(keydownDown  ? 1 << 1 : 0) |
+				(keydownLeft  ? 1 << 2 : 0) |
+				(keydownRight ? 1 << 3 : 0);
+			uint8_t prevmap =
+				(prevkeydownUp    ? 1 << 0 : 0) |
+				(prevkeydownDown  ? 1 << 1 : 0) |
+				(prevkeydownLeft  ? 1 << 2 : 0) |
+				(prevkeydownRight ? 1 << 3 : 0);
+			if (arrowkeys != prevmap) {arrowrepeattimer = 0;}
+			arrowrepeattimer++;
+			if (arrowrepeattimer == 1 || arrowrepeattimer > ARROW_REPEATTIMER) {
+				
+			} else {
+				arrowkeys = 0;
+			}
+		} else {
+			arrowrepeattimer = 0;
+		}
+
 		uint24_t cursor_o_previous = cursor_o;
 		uint24_t scroll_previous = scroll;
-		if kb_IsDown(kb_KeyUp) {cursor_o-=8;}
-		if kb_IsDown(kb_KeyDown) {cursor_o+=8;}
-		if kb_IsDown(kb_KeyLeft) {cursor_o--;}
-		if kb_IsDown(kb_KeyRight) {cursor_o++;}
+		if ((arrowkeys & 1<<0) != 0) {cursor_o-=8;}
+		if ((arrowkeys & 1<<1) != 0) {cursor_o+=8;}
+		if ((arrowkeys & 1<<2) != 0) {cursor_o--;}
+		if ((arrowkeys & 1<<3) != 0) {cursor_o++;}
 
 		// bound checking for cursor position
 		if (cursor_o > 0xFFFF00) {cursor_o = 0;}

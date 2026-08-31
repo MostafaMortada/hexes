@@ -26,6 +26,7 @@
 #define ITEM_COUNT 20 // 18 // How many file names on-screen
 //#define LIST_Y 44
 #define LIST_Y 26
+#define ARROW_REPEATTIMER 6
 
 char *fileselectmenu(uint8_t *outfiletype) {
 	uint24_t cursor = 0;
@@ -41,6 +42,11 @@ char *fileselectmenu(uint8_t *outfiletype) {
 
 	gfx_SetMonospaceFont(8);
 
+	bool keydownUp = false;
+	bool keydownDown = false;
+	bool keydownLeft = false;
+	bool keydownRight = false;
+	int arrowrepeattimer = 0;
 	int tab = 0;
 
 	static char namelist[256][9] = {};
@@ -226,26 +232,61 @@ char *fileselectmenu(uint8_t *outfiletype) {
 			// Draw scroll bar
 			gfx_SetColor(COLORS_FG);
 			gfx_Rectangle(10, LIST_Y, 6, ITEM_COUNT * 10);
-			gfx_FillRectangle(12, LIST_Y + 2 + (ITEM_COUNT * 10 * scroll) / namelistsize, 2, ((ITEM_COUNT * 10 - 4) * ITEM_COUNT) / namelistsize - 2);
+			if (namelistsize <= ITEM_COUNT) {
+				gfx_FillRectangle(12, LIST_Y + 2, 2, ITEM_COUNT * 10 - 4);
+			} else {
+				gfx_FillRectangle(12, LIST_Y + 2 + (ITEM_COUNT * 10 * scroll) / namelistsize, 2, ((ITEM_COUNT * 10 - 4) * ITEM_COUNT) / namelistsize - 2);
+			}
 
 			gfx_SwapDraw();
 
+			bool prevkeydownUp = keydownUp;
+			bool prevkeydownDown = keydownDown;
+			bool prevkeydownLeft = keydownLeft;
+			bool prevkeydownRight = keydownRight;
+			keydownUp = kb_IsDown(kb_KeyUp);
+			keydownDown = kb_IsDown(kb_KeyDown);
+			keydownLeft = kb_IsDown(kb_KeyLeft) || kb_IsDown(kb_KeyWindow);
+			keydownRight = kb_IsDown(kb_KeyRight) || kb_IsDown(kb_KeyZoom);
+			uint8_t arrowkeys = 0;
+			if (keydownUp || keydownDown || keydownLeft || keydownRight) {
+				arrowkeys =
+					(keydownUp    ? 1 << 0 : 0) |
+					(keydownDown  ? 1 << 1 : 0) |
+					(keydownLeft  ? 1 << 2 : 0) |
+					(keydownRight ? 1 << 3 : 0);
+				uint8_t prevmap =
+					(prevkeydownUp    ? 1 << 0 : 0) |
+					(prevkeydownDown  ? 1 << 1 : 0) |
+					(prevkeydownLeft  ? 1 << 2 : 0) |
+					(prevkeydownRight ? 1 << 3 : 0);
+				if (arrowkeys != prevmap) {arrowrepeattimer = 0;}
+				arrowrepeattimer++;
+				if (arrowrepeattimer == 1 || arrowrepeattimer > ARROW_REPEATTIMER) {
+					
+				} else {
+					arrowkeys = 0;
+				}
+			} else {
+				arrowrepeattimer = 0;
+			}
 
 			if kb_IsDown(kb_KeyClear) {return "1";}
 			if kb_IsDown(kb_KeyYequ) {*outfiletype = filetype; return namelist[cursor];}
-			if kb_IsDown(kb_KeyWindow) {
+			if (arrowkeys & 1<<2) {
 				tab--; 
 				if (tab < 0) {tab = 0;}
 				break;
 			}
-			if kb_IsDown(kb_KeyZoom) {
+			if (arrowkeys & 1<<3) {
 				tab++;
 				if (tab >= TAB_COUNT) {tab = TAB_COUNT-1;}
 				break;
 			}
 
-			if kb_IsDown(kb_KeyDown) {cursor++;}
-			if kb_IsDown(kb_KeyUp) {cursor--;}
+			if (arrowkeys & 1<<1) {cursor++;}
+			if (arrowkeys & 1<<0) {cursor--;}
+
 			if (cursor < scroll) {scroll--;}
 			if (cursor > 1000) {cursor = namelistsize - 1; scroll = namelistsize >= ITEM_COUNT ? cursor - ITEM_COUNT : scroll;}
 			if (namelist[cursor][0] == '\0') {cursor = 0; scroll = 0;}

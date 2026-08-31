@@ -14,9 +14,12 @@
 #include "globals.h"
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <keypadc.h>
 #include <graphx.h>
 #include <sys/timers.h>
+
+#define ARROW_REPEATTIMER 6
 
 /*
 void ui_message(int x, int y, int type, char *str) {
@@ -36,12 +39,49 @@ int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize) {
 
 	while (kb_AnyKey());
 
+	bool keydownUp = false;
+	bool keydownDown = false;
+	bool keydownLeft = false;
+	bool keydownRight = false;
+	int arrowrepeattimer = 0;
 	int option = minopt;
 	for(;;) {
 		kb_Scan();
+		bool prevkeydownUp = keydownUp;
+		bool prevkeydownDown = keydownDown;
+		bool prevkeydownLeft = keydownLeft;
+		bool prevkeydownRight = keydownRight;
+		keydownUp = kb_IsDown(kb_KeyUp);
+		keydownDown = kb_IsDown(kb_KeyDown);
+		keydownLeft = kb_IsDown(kb_KeyLeft);
+		keydownRight = kb_IsDown(kb_KeyRight);
+		uint8_t arrowkeys = 0;
+		if (keydownUp || keydownDown || keydownLeft || keydownRight) {
+			arrowkeys =
+				(keydownUp    ? 1 << 0 : 0) |
+				(keydownDown  ? 1 << 1 : 0) |
+				(keydownLeft  ? 1 << 2 : 0) |
+				(keydownRight ? 1 << 3 : 0);
+			uint8_t prevmap =
+				(prevkeydownUp    ? 1 << 0 : 0) |
+				(prevkeydownDown  ? 1 << 1 : 0) |
+				(prevkeydownLeft  ? 1 << 2 : 0) |
+				(prevkeydownRight ? 1 << 3 : 0);
+			if (arrowkeys != prevmap) {arrowrepeattimer = 0;}
+			arrowrepeattimer++;
+			if (arrowrepeattimer == 1 || arrowrepeattimer > ARROW_REPEATTIMER) {
+				
+			} else {
+				arrowkeys = 0;
+			}
+		} else {
+			arrowrepeattimer = 0;
+		}
+
+
 		if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {break;}
-		if kb_IsDown(kb_KeyUp) {option--;}
-		if kb_IsDown(kb_KeyDown) {option++;}
+		if (arrowkeys & 1<<0) {option--;}
+		if (arrowkeys & 1<<1) {option++;}
 		if (option < minopt) {option = menusize-1;}
 		if (option >= menusize) {option = minopt;}
 
@@ -52,7 +92,7 @@ int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize) {
 			gfx_PrintStringXY(opt + i * olen, x + 4, y + 4 + i * 10);
 		}
 
-		delay(80); // delay because its too fuckin fast to control otherwise
+		delay(40); // delay because its too fuckin fast to control otherwise
 	}
 
 	gfx_SetDraw(drawloc);
