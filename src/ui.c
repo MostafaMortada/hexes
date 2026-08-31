@@ -27,7 +27,7 @@ void ui_message(int x, int y, int type, char *str) {
 }*/ // actually this function will never be done later cuz i can just do that with the ui_menu function lmao :p
 
 
-int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize) {
+int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize, kb_lkey_t exitkey1, kb_lkey_t exitkey2) {
 	uint8_t drawloc = gfx_GetDraw();
 	gfx_SetDrawScreen();
 
@@ -80,6 +80,7 @@ int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize) {
 
 
 		if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {break;}
+		if (kb_IsDown(exitkey1) || kb_IsDown(exitkey2)) {option = 255; break;}
 		if (arrowkeys & 1<<0) {option--;}
 		if (arrowkeys & 1<<1) {option++;}
 		if (option < minopt) {option = menusize-1;}
@@ -95,6 +96,7 @@ int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize) {
 		delay(40); // delay because its too fuckin fast to control otherwise
 	}
 
+	while (kb_AnyKey());
 	gfx_SetDraw(drawloc);
 	return option;
 }

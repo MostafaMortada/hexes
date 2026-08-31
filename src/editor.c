@@ -124,7 +124,7 @@ int start_editor(char *filename, uint8_t filetype) {
 					"Save      \0"
 					"Quit      \0"
 					"Close menu\0",
-				0, 11, 3);
+				0, 11, 3, kb_KeyYequ, kb_KeyClear);
 				switch (option) {
 					case 0: {
 						uint8_t outfile = ti_OpenVar(filename, "r", filetype);
@@ -151,7 +151,7 @@ int start_editor(char *filename, uint8_t filetype) {
 					"Option 1  \0"
 					"Option 2  \0"
 					"Close menu\0",
-				0, 11, 3);
+				0, 11, 3, kb_KeyWindow, kb_KeyClear);
 				switch (option) {
 					case 0:
 						break;
@@ -168,7 +168,7 @@ int start_editor(char *filename, uint8_t filetype) {
 					"Option 1     \0"
 					"Customization\0"
 					"Close menu   \0",
-				0, 14, 3);
+				0, 14, 3, kb_KeyZoom, kb_KeyClear);
 				switch (option) {
 					case 0:
 						break;
@@ -186,7 +186,7 @@ int start_editor(char *filename, uint8_t filetype) {
 					"Go to address\0"
 					"Option 2     \0"
 					"Close menu   \0",
-				0, 14, 3);
+				0, 14, 3, kb_KeyTrace, kb_KeyClear);
 				switch (option) {
 					case 0:
 						break;
@@ -204,7 +204,7 @@ int start_editor(char *filename, uint8_t filetype) {
 					"General usage\0"
 					"Other actions\0"
 					"Close menu   \0",
-				0, 14, 4);
+				0, 14, 4, kb_KeyGraph, kb_KeyClear);
 				switch (option) {
 					case 0:
 						break;
@@ -601,7 +601,7 @@ U, |     |  |   U\   ,|
 						"Do you really wanna quit? \0"
 						"No                        \0"
 						"Yes                       \0",
-					2, 27, 4)) {
+					2, 27, 4, kb_KeyClear, kb_KeyClear)) {
 					case 3:
 						will_quit = true;
 						break;

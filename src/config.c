@@ -71,7 +71,7 @@ void config_menu() {
 		strcpy(optlist + 66 + 16, ("<   Toggle    > \0" "< Toggle lock > \0" "<    Hold     > \0") + modkeybehavior * 17); // Modifier key option
 		strcpy(optlist + 99 + 16, hex_addresses ? "< Hexadecimal > \0" : "<   Decimal   > \0");
 		
-		int option = ui_menu(2, 2, optlist, 1, 33, 5);
+		int option = ui_menu(2, 2, optlist, 1, 33, 5, kb_KeyClear, kb_KeyClear);
 
 		switch (option) {
 			case 1: {
@@ -85,7 +85,7 @@ void config_menu() {
 					"Mono White     \0"
 					"Custom palette \0"
 					"Exit menu      \0",
-					1, 16, 9)
+					1, 16, 9, kb_KeyClear, kb_KeyClear)
 				) {
 					case 1: {
 						uint8_t src[] = {0, 255, 7, 224, 241, 255, 30, 8};
