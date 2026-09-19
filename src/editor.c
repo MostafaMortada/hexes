@@ -109,14 +109,6 @@ int start_editor(char *filename, uint8_t filetype) {
 
 		//if (frametimer > FRAMETIMER_BUF_START)
 		{
-			if kb_IsDown(kb_KeyClear) {wanna_quit = true;}
-			key_switchtab_prev = key_switchtab;
-			key_switchtab = kb_IsDown(kb_KeyMode);
-
-			if (key_switchtab && !key_switchtab_prev) {
-				tab = 1 - tab;
-				full_redraw = true;
-			}
 
 			if kb_IsDown(kb_KeyYequ) { // File
 				full_redraw = true;
@@ -148,12 +140,14 @@ int start_editor(char *filename, uint8_t filetype) {
 			if kb_IsDown(kb_KeyWindow) { // Edit
 				full_redraw = true;
 				int option = ui_menu(48, 190,
-					"Option 1  \0"
-					"Option 2  \0"
-					"Close menu\0",
-				0, 11, 3, kb_KeyWindow, kb_KeyClear);
+					"Switch editing pane\0"
+					"Option 2           \0"
+					"Close menu         \0",
+				0, 20, 3, kb_KeyWindow, kb_KeyClear);
 				switch (option) {
 					case 0:
+						tab = 1 - tab;
+						full_redraw = true;
 						break;
 					case 1:
 						break;
@@ -207,12 +201,37 @@ int start_editor(char *filename, uint8_t filetype) {
 				0, 14, 4, kb_KeyGraph, kb_KeyClear);
 				switch (option) {
 					case 0:
+						ditherscreen(COLORS_FG);
+						ui_menu(2, 2,
+							"Hexes Hex Editor v2.0.0 BETA   \0"
+							"\5 Copyright 2024-2026 StephenM \0"
+							"See GitHub repository at:      \0"
+							"github.com/MostafaMortada/hexes\0"
+							"OK                             \0",
+						4, 32, 5, kb_KeyClear, kb_KeyClear);
 						break;
 					case 1:
+						ditherscreen(COLORS_FG);
+						ui_menu(2, 2,
+							"General Usage                  \0"
+							"Arrow keys - move cursor       \0"
+							"Mode - Change editing mode     \0"
+							"  between middle pane and side \0"
+							"OK                             \0",
+						4, 32, 5, kb_KeyClear, kb_KeyClear);
 						break;
 					default:
 						break;
 				}
+			}
+
+			if kb_IsDown(kb_KeyClear) {wanna_quit = true;}
+			key_switchtab_prev = key_switchtab;
+			key_switchtab = kb_IsDown(kb_KeyMode);
+
+			if (key_switchtab && !key_switchtab_prev) {
+				tab = 1 - tab;
+				full_redraw = true;
 			}
 		}
 
@@ -456,9 +475,20 @@ int start_editor(char *filename, uint8_t filetype) {
 		gfx_SetTextXY(2, 2);
 		//gfx_PrintString("Hexes   ");
 		gfx_PrintString(filename);
-		gfx_PrintString(modified ? " (modified)" : "           ");
-		gfx_PrintString("   ");
-		gfx_PrintUInt(cursor_o, 8);
+		if (modified) gfx_PrintString("*");
+		gfx_SetTextXY(88, 2);
+		if (hex_addresses) {
+			gfx_PrintString("0x");
+			Print24bHex(cursor_o);
+			gfx_PrintString("/");
+			Print24bHex(ti_GetSize(buf_h));
+			gfx_PrintString(" B");
+		} else {
+			gfx_PrintUInt(cursor_o, 5);
+			gfx_PrintString("/");
+			gfx_PrintUInt(ti_GetSize(buf_h), 5);
+			gfx_PrintString(" B");
+		}
 
 		//gfx_PrintStringXY("   ", 240, 2);
 		gfx_SetColor(BLACK);
@@ -530,7 +560,12 @@ U, |     |  |   U\   ,|
 			gfx_SetTextFGColor(COLORS_FG);
 			gfx_SetTextBGColor(COLORS_BG2);
 			gfx_SetTextXY(2, i*10 + 16);
-			gfx_PrintUInt((i+scroll) * 8, 8);
+			if (hex_addresses) {
+				gfx_PrintString("0x");
+				Print24bHex((i+scroll) * 8);
+			} else {
+				gfx_PrintUInt((i+scroll) * 8, 8);
+			}
 			for (uint24_t o = 0; o < 8; o++) {
 				uint24_t offset = (i+scroll)*8+o;
 				if (offset < ti_GetSize(buf_h)) {
@@ -583,8 +618,9 @@ U, |     |  |   U\   ,|
 					}
 					if (selected) { gfx_SetTextBGColor(COLORS_BG); }
 				} else {
-					gfx_SetTextBGColor(COLORS_BG);
+					gfx_SetTextBGColor(COLORS_BG2);
 					gfx_PrintStringXY(" ", 256 + o * 8, i * 10 + 16);
+					gfx_SetTextBGColor(COLORS_BG);
 					gfx_PrintStringXY("  ", 84 + o * 20, i * 10 + 16);
 				}
 			}

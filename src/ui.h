@@ -13,9 +13,12 @@
 #define UI_H
 
 #include <keypadc.h>
+#include <stdint.h>
 
 //void ui_message(int x, int y, int type, char *str);
 
 int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize, kb_lkey_t exitkey1, kb_lkey_t exitkey2);
+
+void ditherscreen(uint8_t color);
 
 #endif

@@ -100,3 +100,14 @@ int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize, kb_lkey
 	gfx_SetDraw(drawloc);
 	return option;
 }
+
+void ditherscreen(uint8_t color) {
+	gfx_SetColor(color);
+	for (int x = 0; x < 320; x+=2) {
+		for (int y = 0; y < 240; y+=4) {
+			gfx_SetPixel(x, y);
+			gfx_SetPixel(x+1, y+2);
+		}
+	}
+	return;
+}
