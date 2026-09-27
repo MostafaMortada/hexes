@@ -176,15 +176,20 @@ int start_editor(char *filename, uint8_t filetype) {
 
 			if kb_IsDown(kb_KeyTrace) { // Navigate
 				full_redraw = true;
-				int option = ui_menu(180, 190,
+				int option = ui_menu(180, 180,
+					"Go to top    \0"
+					"Go to EOF    \0"
 					"Go to address\0"
-					"Option 2     \0"
-					"Close menu   \0",
-				0, 14, 3, kb_KeyTrace, kb_KeyClear);
+					"Option 2     \0",
+				0, 14, 4, kb_KeyTrace, kb_KeyClear);
 				switch (option) {
 					case 0:
+						cursor_o = 0;
+						scroll = 0;
 						break;
 					case 1:
+						cursor_o = ti_GetSize(buf_h);
+						scroll = cursor_o / 8;
 						break;
 					default:
 						break;
@@ -193,12 +198,11 @@ int start_editor(char *filename, uint8_t filetype) {
 
 			if kb_IsDown(kb_KeyGraph) { // Help
 				full_redraw = true;
-				int option = ui_menu(206, 180,
+				int option = ui_menu(206, 190,
 					"About        \0"
 					"General usage\0"
-					"Other actions\0"
-					"Close menu   \0",
-				0, 14, 4, kb_KeyGraph, kb_KeyClear);
+					"Other actions\0",
+				0, 14, 3, kb_KeyGraph, kb_KeyClear);
 				switch (option) {
 					case 0:
 						ditherscreen(COLORS_FG);
@@ -522,7 +526,7 @@ U, |     |  |   U\   ,|
 
 		gfx_SetTextBGColor(COLORS_BG);
 		gfx_SetTextFGColor(COLORS_FG);
-		gfx_PrintStringXY("File", 0, 232);
+		gfx_PrintStringXY("File", 2, 232);
 		gfx_PrintStringXY("Edit", 64, 232);
 		gfx_PrintStringXY("View", 132, 232);
 		gfx_PrintStringXY("Navigate", 192, 232);
@@ -560,11 +564,15 @@ U, |     |  |   U\   ,|
 			gfx_SetTextFGColor(COLORS_FG);
 			gfx_SetTextBGColor(COLORS_BG2);
 			gfx_SetTextXY(2, i*10 + 16);
-			if (hex_addresses) {
-				gfx_PrintString("0x");
-				Print24bHex((i+scroll) * 8);
+			if ((i + scroll) * 8 < ti_GetSize(buf_h)) {
+				if (hex_addresses) {
+					gfx_PrintString("0x");
+					Print24bHex((i+scroll) * 8);
+				} else {
+					gfx_PrintUInt((i+scroll) * 8, 8);
+				}
 			} else {
-				gfx_PrintUInt((i+scroll) * 8, 8);
+				gfx_PrintString("        ");
 			}
 			for (uint24_t o = 0; o < 8; o++) {
 				uint24_t offset = (i+scroll)*8+o;
@@ -642,6 +650,7 @@ U, |     |  |   U\   ,|
 						will_quit = true;
 						break;
 					default:
+						full_redraw = true;
 						break;
 				}
 				if (will_quit) {break;}
