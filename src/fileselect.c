@@ -28,6 +28,8 @@
 #define LIST_Y 26
 #define ARROW_REPEATTIMER 6
 
+#define RECENTS -1
+
 char *fileselectmenu(uint8_t *outfiletype) {
 	uint24_t cursor = 0;
 	uint24_t scroll = 0;
@@ -47,13 +49,21 @@ char *fileselectmenu(uint8_t *outfiletype) {
 	bool keydownLeft = false;
 	bool keydownRight = false;
 	int arrowrepeattimer = 0;
-	int tab = 0;
+	int tab = -1; // Slightly questionable numbering but eh it's fine
 
-	static char namelist[256][9] = {};
+	static char namelist[256][10] = {};
+
+	{
+		uint8_t rec = ti_Open(RECENTS_FILENAME, "a");
+		ti_Resize(256, rec);
+		ti_Close(rec);
+	}
 
 	for (;;) {
 		uint8_t filetype;
 		switch (tab) {
+			case -1:
+				break;
 			case 0:
 				filetype = OS_TYPE_PRGM;
 				break;
@@ -98,25 +108,36 @@ char *fileselectmenu(uint8_t *outfiletype) {
 		uint8_t namelistsize = 0;
 
 		for (int i = 0; i < 256; i++) {
-			strcpy(namelist[i], "\0\0\0\0\0\0\0\0\0");
+			strcpy(namelist[i], "\0\0\0\0\0\0\0\0\0\0");
 		}
 
-		void *search_pos = NULL;
+		if (tab == -1) {
+			// Load recently opened file names and their types
 
-		for (;;) {
-			uint8_t type;
-			//const char *name = ti_DetectAny(&search_pos, "", &type);
-			const char *name = ti_DetectAny(&search_pos, "", &type);
+			uint8_t rec = ti_Open(RECENTS_FILENAME, "r");
+			if (rec != 0) {
+				namelistsize = ti_GetC(rec);
+				ti_Read(namelist, 10, namelistsize, rec);
+				ti_Close(rec);
+			}
+		} else {
+			void *search_pos = NULL;
 
-			if (name == NULL) {break;}
+			for (;;) {
+				uint8_t type;
+				//const char *name = ti_DetectAny(&search_pos, "", &type);
+				const char *name = ti_DetectAny(&search_pos, "", &type);
 
-			//if (type != OS_TYPE_PRGM && type != OS_TYPE_PROT_PRGM) {continue;}
-			if (type != filetype) {continue;}
+				if (name == NULL) {break;}
 
-			if (name[0] < 'A') {continue;}
+				//if (type != OS_TYPE_PRGM && type != OS_TYPE_PROT_PRGM) {continue;}
+				if (type != filetype) {continue;}
 
-			strcpy(namelist[namelistsize], name);
-			namelistsize++;
+				if (name[0] < 'A') {continue;}
+
+				strcpy(namelist[namelistsize], name);
+				namelistsize++;
+			}
 		}
 
 		for (;;) {
@@ -132,7 +153,7 @@ char *fileselectmenu(uint8_t *outfiletype) {
 			//gfx_SetTextXY(10, 10);
 			//gfx_PrintUInt(tab, 2);
 
-			for (int i = 0; i < TAB_COUNT; i++) {
+			for (int i = -1; i < TAB_COUNT; i++) {
 				/*if (i == 0) {
 					gfx_SetTextXY(0, 10);
 				} else if (i == 5) {
@@ -141,8 +162,11 @@ char *fileselectmenu(uint8_t *outfiletype) {
 				gfx_SetTextFGColor(tab == i ? COLORS_BG : COLORS_FG);
 				gfx_SetTextBGColor(tab == i ? COLORS_FG : COLORS_BG);
 				switch (i) {
-					case 0:
+					case -1:
 						gfx_SetTextXY(0, 10);
+						gfx_PrintString(" RECENTS ");
+						break;
+					case 0:
 						gfx_PrintString(" PRGM ");
 						break;
 					case 1:
@@ -191,6 +215,9 @@ char *fileselectmenu(uint8_t *outfiletype) {
 						//gfx_PrintStringXY(">", 32, i * 10 + 44);
 						gfx_SetColor(COLORS_CURSOR);
 						gfx_FillRectangle(32, i * 10 + LIST_Y - 2, 128 + 16, 11);
+					}
+					if (tab == RECENTS) {
+						filetype = namelist[i + scroll][9];
 					}
 					gfx_SetTextFGColor(i + scroll == cursor ? COLORS_BG : COLORS_FG);
 					gfx_SetTextBGColor(i + scroll == cursor ? COLORS_CURSOR : COLORS_BG);
@@ -271,11 +298,34 @@ char *fileselectmenu(uint8_t *outfiletype) {
 				arrowrepeattimer = 0;
 			}
 
+			if (tab == RECENTS) {
+				filetype = namelist[cursor][9];
+			}
 			if kb_IsDown(kb_KeyClear) {return "1";}
-			if kb_IsDown(kb_KeyYequ) {*outfiletype = filetype; return namelist[cursor];}
+			if (kb_IsDown(kb_KeyYequ) || kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {
+				*outfiletype = filetype;
+				uint8_t rec = ti_Open(RECENTS_FILENAME, "a");
+				ti_Rewind(rec);
+				int a = ti_GetC(rec) + 1;
+				ti_Rewind(rec);
+				ti_PutC(a > ITEM_COUNT ? ITEM_COUNT : a, rec);
+				ti_Seek(1, SEEK_SET, rec);
+				char d[ITEM_COUNT * 10];
+				ti_Read(d, ITEM_COUNT * 10, 1, rec);
+				ti_Seek(11, SEEK_SET, rec);
+				ti_Write(d, ITEM_COUNT * 10, 1, rec);
+				ti_Seek(1, SEEK_SET, rec);
+				ti_Write(namelist[cursor], 10, 1, rec);
+				if (tab != RECENTS) {
+					ti_Seek(10, SEEK_SET, rec);
+					ti_Write(&filetype, 1, 1, rec);
+				}
+				ti_Close(rec);
+				return namelist[cursor];
+			}
 			if (arrowkeys & 1<<2) {
 				tab--; 
-				if (tab < 0) {tab = 0;}
+				if (tab < -1) {tab = -1;}
 				break;
 			}
 			if (arrowkeys & 1<<3) {

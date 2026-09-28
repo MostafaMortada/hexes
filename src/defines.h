@@ -17,6 +17,7 @@
 
 #define BUFFER_FILENAME ("HEXESBUF")
 #define CONFIG_FILENAME ("HEXESCFG")
+#define RECENTS_FILENAME ("HEXESRCN")
 
 //#define max(a, b) ((a) > (b) ? (a) : (b))
 //#define min(a, b) ((a) < (b) ? (a) : (b))
