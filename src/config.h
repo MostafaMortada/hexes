@@ -13,9 +13,10 @@
 #define CONFIG_H
 
 #include "defines.h"
-#include "stdint.h"
+#include <stdint.h>
+#include <stdbool.h>
 
-void load_config();
+void load_config(bool headless_has_palette);
 
 void write_config();
 

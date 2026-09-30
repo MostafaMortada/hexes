@@ -9,10 +9,13 @@
  * --------------------------------------
 **/
 
+// This file is a mess
+// I'll get back to it later I guess
+
 #include "headless.h"
 #include <string.h>
 
-char *check_for_ans(uint8_t *filetype) {
+char *check_for_ans(uint8_t *filetype, bool *palette_present) {
 	// Reading headless start string. Credits to Captain Calc for this format which he used in HexaEdit, I'm merely copying it.
 
 	uint8_t AnsType;
@@ -34,12 +37,42 @@ char *check_for_ans(uint8_t *filetype) {
 
 			char flags = Ans->data[8];
 
-			if (flags & (1 << 0)) { // Colorscheme present
-				// uhhh idk do nothing for now
+			if (flags & (1 << 1)) { // Memory editor
+				// do nothing, this doesn't exist in Hexes yet
+				return "1";
 			}
 
-			if (flags & (1 << 1)) { // Memory editor
-				// also do nothing, this doesn't exist in Hexes yet
+			if (flags & (1 << 0)) { // Colorscheme present
+				/*
+				typedef struct
+					{
+					uint8_t bar;						// index 22 in ans (with variable editor header)
+					uint8_t bar_text;					// 23
+
+					// Used for unavailable tools in the editor toolbar.
+					uint8_t bar_text_dark;				// 24
+
+					uint8_t background;					// 25
+					uint8_t editor_side_panel;			// 26
+					uint8_t editor_cursor;				// 27
+					uint8_t editor_text_normal;			// 28
+					uint8_t editor_text_selected;		// 29
+					uint8_t list_cursor;				// 30
+					uint8_t list_text_normal;			// 31
+					uint8_t list_text_selected;			// 32
+				} s_color;
+
+				^^^ This was copied from the HexaEdit readme for me to reference :3
+				*/
+
+				*palette_present = true;
+
+				COLORS_BG = Ans->data[25];
+				COLORS_BG2 = Ans->data[26];
+				COLORS_CURSOR = Ans->data[27];
+				COLORS_FG = Ans->data[28];
+
+				// I tried :,)
 			}
 
 			if (flags & (1 << 2)) { // Variable editor

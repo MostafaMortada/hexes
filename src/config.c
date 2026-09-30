@@ -21,10 +21,14 @@
 #include "ui.h"
 #include "colorpicker.h"
 
-void load_config() {
+void load_config(bool headless_has_palette) {
 	uint8_t cfg = ti_Open(CONFIG_FILENAME, "r");
 	if (cfg != 0) {
-		ti_Read(palette, PALETTE_SIZE, 1, cfg);
+		if (headless_has_palette) {
+			ti_Seek(PALETTE_SIZE, SEEK_SET, cfg);
+		} else {
+			ti_Read(palette, PALETTE_SIZE, 1, cfg);
+		}
 		ti_Read(&modkeybehavior, 1, 1, cfg);
 		uint8_t ha = 0;
 		ti_Read(&ha, 1, 1, cfg);

@@ -30,13 +30,14 @@
 
 int main(void) {
 	uint8_t filetype;
-	char *filename = check_for_ans(&filetype); // headless start
+	bool headless_has_palette;
+	char *filename = check_for_ans(&filetype, &headless_has_palette); // headless start
 
 	gfx_Begin();
 	gfx_SetFontData(font);
 	kb_SetMode(MODE_3_CONTINUOUS);
 
-	load_config();
+	load_config(headless_has_palette);
 	
 	gfx_SetTextTransparentColor(ret_text_trans_color());
 	

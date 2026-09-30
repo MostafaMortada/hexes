@@ -19,6 +19,6 @@
 #include <ti/vars.h>
 #include <ti/tokens.h>
 
-char *check_for_ans(uint8_t *filetype);
+char *check_for_ans(uint8_t *filetype, bool *palette_present);
 
 #endif
