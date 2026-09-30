@@ -29,9 +29,7 @@
 //#include "gfx/gfx.h"
 
 int main(void) {
-
 	uint8_t filetype;
-
 	char *filename = check_for_ans(&filetype); // headless start
 
 	gfx_Begin();
@@ -46,19 +44,26 @@ int main(void) {
 		filename = fileselectmenu(&filetype);
 	}
 
+	{
+		uint8_t handle = ti_Open(RECENTS_FILENAME, "r");
+		ti_SetArchiveStatus(true, handle);
+		ti_Close(handle);
+	}
+
 	if (filename[0] >= 'A') {
-		/*uint8_t bufferh = ti_Open(BUFFER_FILENAME, "w");
-		uint8_t fileih = ti_OpenVar(filename, "r", filetype);
-		ti_Write(ti_GetDataPtr(fileih), ti_GetSize(fileih), 1, bufferh);
-		ti_Close(bufferh);
-		ti_Close(fileih);*/
 		copyvar(filename, filetype, BUFFER_FILENAME, OS_TYPE_APPVAR);
 		start_editor(filename, filetype);
-		// reminder to delete HEXESBUF once this ends or smth
 	}
+
+	ti_Delete(BUFFER_FILENAME);
 
 	gfx_End();
 	write_config();
+	{
+		uint8_t handle = ti_Open(CONFIG_FILENAME, "r");
+		ti_SetArchiveStatus(true, handle);
+		ti_Close(handle);
+	}
 
 	return 0;
 }
