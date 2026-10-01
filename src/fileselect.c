@@ -24,7 +24,7 @@
 #include "input.h"
 
 #define TAB_COUNT 3
-#define ITEM_COUNT 20 // 18 // How many file names on-screen
+#define ITEM_COUNT 21 // 18 // How many file names on-screen
 //#define LIST_Y 44
 #define LIST_Y 26
 #define ARROW_REPEATTIMER 6
@@ -56,6 +56,7 @@ char *fileselectmenu(uint8_t *outfiletype) {
 
 	{
 		uint8_t rec = ti_Open(RECENTS_FILENAME, "a");
+		ti_SetArchiveStatus(false, rec);
 		ti_Resize(256, rec);
 		ti_Close(rec);
 	}
@@ -148,65 +149,68 @@ char *fileselectmenu(uint8_t *outfiletype) {
 			gfx_SetTextFGColor(COLORS_FG);
 			gfx_SetTextBGColor(COLORS_BG);
 
-			gfx_PrintStringXY("Open", 0, 232);
-			gfx_PrintStringXY("<<<", 75, 232);
-			gfx_PrintStringXY(">>>", 145, 232);
+			//gfx_PrintStringXY("Open", 0, 232);
+			//gfx_PrintStringXY("<<<", 75, 232);
+			//gfx_PrintStringXY(">>>", 145, 232);
 			//gfx_SetTextXY(10, 10);
 			//gfx_PrintUInt(tab, 2);
 
-			for (int i = -1; i < TAB_COUNT; i++) {
-				/*if (i == 0) {
-					gfx_SetTextXY(0, 10);
-				} else if (i == 5) {
-					gfx_SetTextXY(0, 20);
-				}*/
-				gfx_SetTextFGColor(tab == i ? COLORS_BG : COLORS_FG);
-				gfx_SetTextBGColor(tab == i ? COLORS_FG : COLORS_BG);
-				switch (i) {
-					case -1:
-						gfx_SetTextXY(0, 10);
-						gfx_PrintString(" RECENTS ");
-						break;
-					case 0:
-						gfx_PrintString(" PRGM ");
-						break;
-					case 1:
-						gfx_PrintString(" PROT.PRGM ");
-						break;
-					case 2:
-						gfx_PrintString(" APPVAR ");
-						break;
-					case 3:
-						gfx_PrintString(" STR ");
-						break;
-					case 4:
-						gfx_PrintString(" EQU ");
-						gfx_PrintChar(14);
-						break;
-					case 5:
-						gfx_SetTextXY(0, 20);
-						gfx_PrintString(" REAL ");
-						break;
-					case 6:
-						gfx_PrintString(" REAL LIST ");
-						break;
-					case 7:
-						gfx_PrintString(" CPLX ");
-						break;
-					case 8:
-						gfx_PrintString(" CPLX LIST ");
-						gfx_PrintChar(14);
-						break;
-					case 9:
-						gfx_SetTextXY(0, 30);
-						gfx_PrintString(" MATRIX ");
-						break;
-					case 10:
-						gfx_PrintString(" PICTURE ");
-						break;
-					case 11:
-						gfx_PrintString(" GDB ");
-						break;
+			for (int b = 0; b < 3; b++) {
+				for (int i = -1; i < TAB_COUNT; i++) {
+					if (b == 2) {
+						gfx_SetTextFGColor(tab == i ? COLORS_BG : COLORS_FG);
+						gfx_SetTextBGColor(tab == i ? COLORS_CURSOR : COLORS_BG);
+					} else {
+						gfx_SetTextFGColor(tab == i ? COLORS_CURSOR: COLORS_BG);
+						gfx_SetTextBGColor(tab == i ? COLORS_CURSOR : COLORS_BG);
+					}
+
+					switch (i) {
+						case -1:
+							gfx_SetTextXY(0, b==2 ? 10 : (b==0 ? 8 : 11));
+							gfx_PrintString(" RECENTS ");
+							break;
+						case 0:
+							gfx_PrintString(" PRGM ");
+							break;
+						case 1:
+							gfx_PrintString(" PROT.PRGM ");
+							break;
+						case 2:
+							gfx_PrintString(" APPVAR ");
+							break;
+						case 3:
+							gfx_PrintString(" STR ");
+							break;
+						case 4:
+							gfx_PrintString(" EQU ");
+							gfx_PrintChar(14);
+							break;
+						case 5:
+							gfx_SetTextXY(0, 20);
+							gfx_PrintString(" REAL ");
+							break;
+						case 6:
+							gfx_PrintString(" REAL LIST ");
+							break;
+						case 7:
+							gfx_PrintString(" CPLX ");
+							break;
+						case 8:
+							gfx_PrintString(" CPLX LIST ");
+							gfx_PrintChar(14);
+							break;
+						case 9:
+							gfx_SetTextXY(0, 30);
+							gfx_PrintString(" MATRIX ");
+							break;
+						case 10:
+							gfx_PrintString(" PICTURE ");
+							break;
+						case 11:
+							gfx_PrintString(" GDB ");
+							break;
+					}
 				}
 			}
 
@@ -274,7 +278,7 @@ char *fileselectmenu(uint8_t *outfiletype) {
 				filetype = namelist[cursor][9];
 			}
 			if kb_IsDown(kb_KeyClear) {return "1";}
-			if (kb_IsDown(kb_KeyYequ) || kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {
+			if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {
 				*outfiletype = filetype;
 				uint8_t rec = ti_Open(RECENTS_FILENAME, "a");
 				ti_Rewind(rec);
