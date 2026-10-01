@@ -18,6 +18,7 @@
 #include <keypadc.h>
 #include <graphx.h>
 #include <sys/timers.h>
+#include "input.h"
 
 #define ARROW_REPEATTIMER 6
 
@@ -52,37 +53,7 @@ int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize, kb_lkey
 	int option = minopt;
 	for(;;) {
 		kb_Scan();
-		bool prevkeydownUp = keydownUp;
-		bool prevkeydownDown = keydownDown;
-		bool prevkeydownLeft = keydownLeft;
-		bool prevkeydownRight = keydownRight;
-		keydownUp = kb_IsDown(kb_KeyUp);
-		keydownDown = kb_IsDown(kb_KeyDown);
-		keydownLeft = kb_IsDown(kb_KeyLeft);
-		keydownRight = kb_IsDown(kb_KeyRight);
-		uint8_t arrowkeys = 0;
-		if (keydownUp || keydownDown || keydownLeft || keydownRight) {
-			arrowkeys =
-				(keydownUp    ? 1 << 0 : 0) |
-				(keydownDown  ? 1 << 1 : 0) |
-				(keydownLeft  ? 1 << 2 : 0) |
-				(keydownRight ? 1 << 3 : 0);
-			uint8_t prevmap =
-				(prevkeydownUp    ? 1 << 0 : 0) |
-				(prevkeydownDown  ? 1 << 1 : 0) |
-				(prevkeydownLeft  ? 1 << 2 : 0) |
-				(prevkeydownRight ? 1 << 3 : 0);
-			if (arrowkeys != prevmap) {arrowrepeattimer = 0;}
-			arrowrepeattimer++;
-			if (arrowrepeattimer == 1 || arrowrepeattimer > ARROW_REPEATTIMER) {
-				
-			} else {
-				arrowkeys = 0;
-			}
-		} else {
-			arrowrepeattimer = 0;
-		}
-
+		uint8_t arrowkeys = arrow_key_repeat_handler(&arrowrepeattimer, ARROW_REPEATTIMER, &keydownUp, &keydownDown, &keydownLeft, &keydownRight);
 
 		if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {break;}
 		if (kb_IsDown(exitkey1) || kb_IsDown(exitkey2)) {option = 255; break;}
@@ -108,11 +79,12 @@ int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize, kb_lkey
 
 void ditherscreen(uint8_t color) {
 	gfx_SetColor(color);
-	for (int x = 0; x < 320; x+=2) {
+	//for (int x = 0; x < 320; x+=4) {
 		for (int y = 0; y < 240; y+=2) {
-			gfx_SetPixel(x, y);
-			gfx_SetPixel(x+1, y+1);
+			//gfx_SetPixel(x, y);
+			//gfx_SetPixel(x+2, y+1);
+			gfx_HorizLine(0, y, 320);
 		}
-	}
+	//}
 	return;
 }

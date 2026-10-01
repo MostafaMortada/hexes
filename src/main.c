@@ -5,7 +5,7 @@
  * By StephenM
  * Copyright 2024 - 2026
  * License: GPL-3.0
- * Version: 2.betasomething
+ * Version: 2.0.0 BETA
  *
  * --------------------------------------
 **/

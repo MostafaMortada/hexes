@@ -21,6 +21,7 @@
 #include <sys/timers.h>
 #include <ti/vars.h>
 #include <string.h>
+#include "input.h"
 
 #define TAB_COUNT 3
 #define ITEM_COUNT 20 // 18 // How many file names on-screen
@@ -267,36 +268,7 @@ char *fileselectmenu(uint8_t *outfiletype) {
 
 			gfx_SwapDraw();
 
-			bool prevkeydownUp = keydownUp;
-			bool prevkeydownDown = keydownDown;
-			bool prevkeydownLeft = keydownLeft;
-			bool prevkeydownRight = keydownRight;
-			keydownUp = kb_IsDown(kb_KeyUp);
-			keydownDown = kb_IsDown(kb_KeyDown);
-			keydownLeft = kb_IsDown(kb_KeyLeft) || kb_IsDown(kb_KeyWindow);
-			keydownRight = kb_IsDown(kb_KeyRight) || kb_IsDown(kb_KeyZoom);
-			uint8_t arrowkeys = 0;
-			if (keydownUp || keydownDown || keydownLeft || keydownRight) {
-				arrowkeys =
-					(keydownUp    ? 1 << 0 : 0) |
-					(keydownDown  ? 1 << 1 : 0) |
-					(keydownLeft  ? 1 << 2 : 0) |
-					(keydownRight ? 1 << 3 : 0);
-				uint8_t prevmap =
-					(prevkeydownUp    ? 1 << 0 : 0) |
-					(prevkeydownDown  ? 1 << 1 : 0) |
-					(prevkeydownLeft  ? 1 << 2 : 0) |
-					(prevkeydownRight ? 1 << 3 : 0);
-				if (arrowkeys != prevmap) {arrowrepeattimer = 0;}
-				arrowrepeattimer++;
-				if (arrowrepeattimer == 1 || arrowrepeattimer > ARROW_REPEATTIMER) {
-					
-				} else {
-					arrowkeys = 0;
-				}
-			} else {
-				arrowrepeattimer = 0;
-			}
+			uint8_t arrowkeys = arrow_key_repeat_handler(&arrowrepeattimer, ARROW_REPEATTIMER, &keydownUp, &keydownDown, &keydownLeft, &keydownRight);
 
 			if (tab == RECENTS) {
 				filetype = namelist[cursor][9];
