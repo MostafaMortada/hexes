@@ -54,11 +54,12 @@ void config_menu() {
 
 	bool exit = false;
 
+	bool will_draw_dither = true;
 
 	while (!exit) {
 		//kb_Scan();
 		gfx_SetDrawScreen();
-		gfx_FillScreen(BLACK);
+		//gfx_FillScreen(BLACK);
 
 		while (kb_AnyKey());
 
@@ -75,11 +76,13 @@ void config_menu() {
 		strcpy(optlist + 66 + 16, ("<   Toggle    > \0" "< Toggle lock > \0" "<    Hold     > \0") + modkeybehavior * 17); // Modifier key option
 		strcpy(optlist + 99 + 16, hex_addresses ? "< Hexadecimal > \0" : "<   Decimal   > \0");
 		
-		int option = ui_menu(2, 2, optlist, 1, 33, 5, kb_KeyClear, kb_KeyClear);
+		if (will_draw_dither) {
+			ditherscreen(COLORS_FG);
+		}
 
-		switch (option) {
+		switch (ui_menu(-1, 0, optlist, 1, 33, 5, kb_KeyClear, kb_KeyClear)) {
 			case 1: {
-				switch (ui_menu(2, 2,
+				switch (ui_menu(-1, 0,
 					"COLOR PALETTE  \0"
 					"Default Black  \0"
 					"Default White  \0"
@@ -124,29 +127,34 @@ void config_menu() {
 							gfx_SetTextFGColor(COLORS_FG);
 							gfx_PrintStringXY("[1] Foreground", 0, 20);
 							gfx_PrintStringXY("[2] Background", 0, 30);
-							gfx_SetTextFGColor(COLORS_CURSOR);
-							gfx_PrintStringXY("[3] Cursor", 0, 40);
 							gfx_SetTextFGColor(COLORS_FG);
-							gfx_PrintStringXY("IN EDITOR:", 0, 50);
+							gfx_SetTextBGColor(COLORS_BG2);
+							gfx_PrintStringXY("[3] Alternate Background", 0, 40);
+							gfx_SetTextBGColor(COLORS_BG);
+							gfx_SetTextFGColor(COLORS_CURSOR);
+							gfx_PrintStringXY("[4] Cursor", 0, 50);
+							gfx_SetTextFGColor(COLORS_FG);
+							gfx_PrintStringXY("IN EDITOR:", 0, 60);
 							gfx_SetTextFGColor(COLORS_NULL);
-							gfx_PrintStringXY("[4] Null bytes (0x00)", 10, 60);
+							gfx_PrintStringXY("[5] Null bytes (0x00)", 10, 70);
 							gfx_SetTextFGColor(COLORS_01_1F);
-							gfx_PrintStringXY("[5] ASCII control codes (0x01 - 0x1F)", 10, 70);
+							gfx_PrintStringXY("[6] ASCII control codes (0x01 - 0x1F)", 10, 80);
 							gfx_SetTextFGColor(COLORS_20_7F);
-							gfx_PrintStringXY("[6] Displayable glyphs  (0x20 - 0x7F)", 10, 80);
+							gfx_PrintStringXY("[7] Displayable glyphs  (0x20 - 0x7F)", 10, 90);
 							gfx_SetTextFGColor(COLORS_80_FF);
-							gfx_PrintStringXY("[7] The rest            (0x80 - 0xFF)", 10, 90);
+							gfx_PrintStringXY("[8] The rest            (0x80 - 0xFF)", 10, 100);
 
 							kb_Scan();
 							uint8_t edcol_pal = 255;
 							if kb_IsDown(kb_KeyClear) break;
 							if kb_IsDown(kb_Key1) edcol_pal = 1;
 							if kb_IsDown(kb_Key2) edcol_pal = 0;
-							if kb_IsDown(kb_Key3) edcol_pal = 2;
-							if kb_IsDown(kb_Key4) edcol_pal = 3;
-							if kb_IsDown(kb_Key5) edcol_pal = 4;
-							if kb_IsDown(kb_Key6) edcol_pal = 5;
-							if kb_IsDown(kb_Key7) edcol_pal = 6;
+							if kb_IsDown(kb_Key3) edcol_pal = 7;
+							if kb_IsDown(kb_Key4) edcol_pal = 2;
+							if kb_IsDown(kb_Key5) edcol_pal = 3;
+							if kb_IsDown(kb_Key6) edcol_pal = 4;
+							if kb_IsDown(kb_Key7) edcol_pal = 5;
+							if kb_IsDown(kb_Key8) edcol_pal = 6;
 							if (edcol_pal != 255) {
 								palette[edcol_pal] = colorpicker(palette[edcol_pal]);
 								gfx_FillScreen(COLORS_BG);
@@ -159,16 +167,20 @@ void config_menu() {
 						break;
 				}
 				gfx_SetTextTransparentColor(ret_text_trans_color());
+				will_draw_dither = true;
 				break;
 			}
 			case 2:
 				modkeybehavior = (modkeybehavior + 1) % 3;
+				will_draw_dither = false;
 				break;
 			case 3:
+				will_draw_dither = false;
 				hex_addresses = ! hex_addresses;
 				break;
 			default:
 				exit = true;
+				will_draw_dither = false;
 				break;
 		}
 	}

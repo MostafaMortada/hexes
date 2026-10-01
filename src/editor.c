@@ -206,7 +206,7 @@ int start_editor(char *filename, uint8_t filetype) {
 				switch (option) {
 					case 0:
 						ditherscreen(COLORS_FG);
-						ui_menu(2, 2,
+						ui_menu(-1, 0,
 							"Hexes Hex Editor v2.0.0 BETA   \0"
 							"\5 Copyright 2024-2026 StephenM \0"
 							"See GitHub repository at:      \0"

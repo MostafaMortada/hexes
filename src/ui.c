@@ -31,6 +31,11 @@ int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize, kb_lkey
 	uint8_t drawloc = gfx_GetDraw();
 	gfx_SetDrawScreen();
 
+	if (x == -1) {
+		x = 160 - olen * 4;
+		y = 120 - menusize * 5 - 3;
+	}
+
 	gfx_SetColor(COLORS_FG);
 	gfx_FillRectangle(x, y, olen * 8, menusize * 10 + 6);
 	gfx_SetColor(COLORS_BG);
@@ -104,9 +109,9 @@ int ui_menu(int x, int y, char *opt, int minopt, int olen, int menusize, kb_lkey
 void ditherscreen(uint8_t color) {
 	gfx_SetColor(color);
 	for (int x = 0; x < 320; x+=2) {
-		for (int y = 0; y < 240; y+=4) {
+		for (int y = 0; y < 240; y+=2) {
 			gfx_SetPixel(x, y);
-			gfx_SetPixel(x+1, y+2);
+			gfx_SetPixel(x+1, y+1);
 		}
 	}
 	return;
