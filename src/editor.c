@@ -413,7 +413,7 @@ U, |     |  |   U\   ,|
 		}
 
 		gfx_SetClipRegion(0, 0, 320, 240);
-		if (scroll < scroll_previous) {gfx_SetClipRegion(0, 16, 320, 216+10); gfx_ShiftDown(10);}
+		if (scroll < scroll_previous) {gfx_SetClipRegion(0, 16+10, 320, 216+10); gfx_ShiftDown(10);}
 		if (scroll > scroll_previous) {gfx_SetClipRegion(0, 16, 320, 216); gfx_ShiftUp(10);}
 		gfx_SetClipRegion(0, 0, 320, 240);
 

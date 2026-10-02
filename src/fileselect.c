@@ -21,13 +21,16 @@
 #include <sys/timers.h>
 #include <ti/vars.h>
 #include <string.h>
+#include "config.h"
 #include "input.h"
+#include "ui.h"
 
 #define TAB_COUNT 3
-#define ITEM_COUNT 21 // 18 // How many file names on-screen
+#define ITEM_COUNT 20 // 18 // How many file names on-screen
 //#define LIST_Y 44
-#define LIST_Y 26
-#define ARROW_REPEATTIMER 6
+#define LIST_Y 28
+#define LIST_X 71
+#define ARROW_REPEATTIMER 14
 
 #define RECENTS -1
 
@@ -51,6 +54,8 @@ char *fileselectmenu(uint8_t *outfiletype) {
 	bool keydownRight = false;
 	int arrowrepeattimer = 0;
 	int tab = -1; // Slightly questionable numbering but eh it's fine
+
+	bool full_redraw = true;
 
 	static char namelist[256][10] = {};
 
@@ -142,12 +147,143 @@ char *fileselectmenu(uint8_t *outfiletype) {
 			}
 		}
 
-		for (;;) {
-			gfx_SetDrawBuffer();
-			gfx_FillScreen(COLORS_BG);
+		full_redraw = true;
+		cursor = 0;
+		scroll = 0;
 
-			gfx_SetTextFGColor(COLORS_FG);
-			gfx_SetTextBGColor(COLORS_BG);
+		for (;;) {
+
+			kb_Scan();
+
+			if kb_IsDown(kb_KeyZoom) { // View
+				full_redraw = true;
+				switch (ui_menu(100, 190,
+					"Option 1     \0"
+					"Customization\0"
+					"Close menu   \0",
+				0, 14, 3, kb_KeyZoom, kb_KeyClear)) {
+					case 0:
+						break;
+					case 1:
+						config_menu();
+						break;
+					default:
+						break;
+				}
+			}
+
+			if kb_IsDown(kb_KeyGraph) { // Help
+				full_redraw = true;
+				switch (ui_menu(206, 190,
+					"About        \0"
+					"General usage\0"
+					"Other actions\0",
+				0, 14, 3, kb_KeyGraph, kb_KeyClear)) {
+					case 0:
+						ditherscreen(COLORS_FG);
+						ui_menu(-1, 0,
+							"Hexes Hex Editor v2.0.0 BETA   \0"
+							"\5 Copyright 2024-2026 StephenM \0"
+							"See GitHub repository at:      \0"
+							"github.com/MostafaMortada/hexes\0"
+							"OK                             \0",
+						4, 32, 5, kb_KeyClear, kb_KeyClear);
+						break;
+					case 1:
+						ditherscreen(COLORS_FG);
+						ui_menu(2, 2,
+							"General Usage                  \0"
+							"Arrow keys - move cursor       \0"
+							"Mode - Change editing mode     \0"
+							"  between middle pane and side \0"
+							"OK                             \0",
+						4, 32, 5, kb_KeyClear, kb_KeyClear);
+						break;
+					default:
+						break;
+				}
+			}
+
+			uint8_t arrowkeys = arrow_key_repeat_handler(&arrowrepeattimer, ARROW_REPEATTIMER, &keydownUp, &keydownDown, &keydownLeft, &keydownRight);
+
+			if (tab == RECENTS) {
+				filetype = namelist[cursor][9];
+			}
+			if kb_IsDown(kb_KeyClear) {return "1";}
+			if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {
+				gfx_SetDrawBuffer();
+				*outfiletype = filetype;
+				uint8_t rec = ti_Open(RECENTS_FILENAME, "a");
+				ti_Rewind(rec);
+				int a = ti_GetC(rec) + 1;
+				ti_Rewind(rec);
+				ti_PutC(a > ITEM_COUNT ? ITEM_COUNT : a, rec);
+				ti_Seek(1, SEEK_SET, rec);
+				char d[ITEM_COUNT * 10];
+				ti_Read(d, ITEM_COUNT * 10, 1, rec);
+				ti_Seek(11, SEEK_SET, rec);
+				ti_Write(d, ITEM_COUNT * 10, 1, rec);
+				ti_Seek(1, SEEK_SET, rec);
+				ti_Write(namelist[cursor], 10, 1, rec);
+				if (tab != RECENTS) {
+					ti_Seek(10, SEEK_SET, rec);
+					ti_Write(&filetype, 1, 1, rec);
+				}
+				ti_Close(rec);
+				return namelist[cursor];
+			}
+			if (arrowkeys & 1<<2) {
+				tab--;
+				if (tab < -1) {tab = -1;}
+				break;
+			}
+			if (arrowkeys & 1<<3) {
+				tab++;
+				if (tab >= TAB_COUNT) {tab = TAB_COUNT-1;}
+				break;
+			}
+
+			uint24_t scroll_previous = scroll;
+
+			if (arrowkeys & 1<<1) {cursor++;}
+			if (arrowkeys & 1<<0) {cursor--;}
+
+			if (cursor < scroll) {scroll--;}
+			if (cursor > 1000) {
+				cursor = namelistsize - 1;
+				scroll = namelistsize >= ITEM_COUNT ? cursor - ITEM_COUNT : scroll;
+				full_redraw = true;
+			}
+			if (namelist[cursor][0] == '\0') {
+				cursor = 0; scroll = 0;
+				full_redraw = true;
+			}
+			if (cursor > scroll + ITEM_COUNT - 1) {scroll++;}
+
+			if (full_redraw) {
+				gfx_SetDrawBuffer();
+				gfx_FillScreen(COLORS_BG);
+				gfx_SetColor(COLORS_BG2);
+				gfx_FillRectangle(0, 23, 70, 206);
+				gfx_FillRectangle(250, 23, 70, 206);
+				gfx_SetColor(COLORS_FG);
+				gfx_HorizLine(0, 229, 320);
+				gfx_HorizLine(0, 11, 320);
+				gfx_HorizLine(0, 23, 320);
+				gfx_VertLine(70, 11, 218);
+				gfx_VertLine(250, 11, 218);
+
+				gfx_SetTextFGColor(COLORS_FG);
+				gfx_SetTextBGColor(COLORS_BG);
+				gfx_PrintStringXY("Hexes Hex Editor", 96, 2);
+			} else {
+				gfx_SetDrawScreen();
+				gfx_SetClipRegion(0, 0, 320, 240);
+				if (scroll < scroll_previous) {gfx_SetClipRegion(71, LIST_Y, 241, LIST_Y + ITEM_COUNT * 10); gfx_ShiftDown(10);}
+				if (scroll > scroll_previous) {gfx_SetClipRegion(71, LIST_Y, 241, LIST_Y + ITEM_COUNT * 10); gfx_ShiftUp(10);}
+				gfx_SetClipRegion(0, 0, 320, 240);
+
+			}
 
 			//gfx_PrintStringXY("Open", 0, 232);
 			//gfx_PrintStringXY("<<<", 75, 232);
@@ -155,6 +291,7 @@ char *fileselectmenu(uint8_t *outfiletype) {
 			//gfx_SetTextXY(10, 10);
 			//gfx_PrintUInt(tab, 2);
 
+			if (full_redraw) {
 			for (int b = 0; b < 3; b++) {
 				for (int i = -1; i < TAB_COUNT; i++) {
 					if (b == 2) {
@@ -167,7 +304,7 @@ char *fileselectmenu(uint8_t *outfiletype) {
 
 					switch (i) {
 						case -1:
-							gfx_SetTextXY(0, b==2 ? 10 : (b==0 ? 8 : 11));
+							gfx_SetTextXY(24, b==2 ? 14 : (b==0 ? 12 : 15));
 							gfx_PrintString(" RECENTS ");
 							break;
 						case 0:
@@ -213,14 +350,27 @@ char *fileselectmenu(uint8_t *outfiletype) {
 					}
 				}
 			}
+			}
 
-			for (int i = 0; i < ITEM_COUNT; i++) {
+			int rowmin = cursor - scroll - 1;
+			rowmin = rowmin < 0 ? 0 : rowmin;
+			int rowmax = cursor - scroll + 2;
+			rowmax = rowmax > ITEM_COUNT ? ITEM_COUNT : rowmax;
+			if (full_redraw) {
+				rowmin = 0;
+				rowmax = ITEM_COUNT;
+			}
+
+			if (arrowkeys != 0 || full_redraw) {
+			for (int i = rowmin; i < rowmax; i++) {
 				if (i + scroll < namelistsize) {
-					if (i + scroll == cursor) {
+					/*if (i + scroll == cursor) {
 						//gfx_PrintStringXY(">", 32, i * 10 + 44);
 						gfx_SetColor(COLORS_CURSOR);
-						gfx_FillRectangle(32, i * 10 + LIST_Y - 2, 128 + 16, 11);
-					}
+						gfx_FillRectangle(LIST_X, i * 10 + LIST_Y - 2, 169, 11);
+					}*/
+					gfx_SetColor(i + scroll == cursor ? COLORS_CURSOR : COLORS_BG);
+					gfx_FillRectangle(LIST_X, i * 10 + LIST_Y - 2, 169, 11);
 					if (tab == RECENTS) {
 						filetype = namelist[i + scroll][9];
 					}
@@ -228,13 +378,13 @@ char *fileselectmenu(uint8_t *outfiletype) {
 					gfx_SetTextBGColor(i + scroll == cursor ? COLORS_CURSOR : COLORS_BG);
 					uint8_t han = ti_OpenVar(namelist[i + scroll], "r", filetype);
 					if (ti_IsArchived(han) != 0) {
-						gfx_PrintStringXY("*", 40, i * 10 + LIST_Y);
+						gfx_PrintStringXY("*", LIST_X+8, i * 10 + LIST_Y);
 					}
-					gfx_SetTextXY(128, i * 10 + LIST_Y);
+					gfx_SetTextXY(LIST_X + 112, i * 10 + LIST_Y);
 					gfx_PrintUInt(ti_GetSize(han), 5);
 					ti_Close(han);
 					char *name = namelist[i + scroll];
-					gfx_SetTextXY(48, i*10 + LIST_Y);
+					gfx_SetTextXY(LIST_X+16, i*10 + LIST_Y);
 					switch (name[0]) {
 						case 0x5D: // List
 							if (name[1] < 6) {
@@ -260,68 +410,41 @@ char *fileselectmenu(uint8_t *outfiletype) {
 					//gfx_PrintStringXY(namelist[i + scroll], 48, i * 10 + 34);
 				}
 			}
+			}
 
 			// Draw scroll bar
+			if (scroll != scroll_previous) {
+				gfx_SetColor(COLORS_BG);
+				gfx_FillRectangle(243, LIST_Y - 1, 3, ITEM_COUNT * 10 - 2);
+			}
 			gfx_SetColor(COLORS_FG);
-			gfx_Rectangle(10, LIST_Y, 6, ITEM_COUNT * 10);
+			gfx_Rectangle(242, LIST_Y - 2, 6, ITEM_COUNT * 10);
 			if (namelistsize <= ITEM_COUNT) {
-				gfx_FillRectangle(12, LIST_Y + 2, 2, ITEM_COUNT * 10 - 4);
+				gfx_FillRectangle(244, LIST_Y, 2, ITEM_COUNT * 10 - 4);
 			} else {
-				gfx_FillRectangle(12, LIST_Y + 2 + (ITEM_COUNT * 10 * scroll) / namelistsize, 2, ((ITEM_COUNT * 10 - 4) * ITEM_COUNT) / namelistsize - 2);
+				gfx_FillRectangle(244, LIST_Y + (ITEM_COUNT * 10 * scroll) / namelistsize, 2, ((ITEM_COUNT * 10 - 4) * ITEM_COUNT) / namelistsize - 2);
 			}
 
-			gfx_SwapDraw();
+			gfx_SetTextBGColor(COLORS_BG);
+			gfx_SetTextFGColor(COLORS_FG);
+			//gfx_PrintStringXY("File", 2, 232);
+			//gfx_PrintStringXY("Edit", 64, 232);
+			gfx_PrintStringXY("View", 132, 232);
+			//gfx_PrintStringXY("Navigate", 192, 232);
+			gfx_PrintStringXY("Help", 288, 232);
 
-			uint8_t arrowkeys = arrow_key_repeat_handler(&arrowrepeattimer, ARROW_REPEATTIMER, &keydownUp, &keydownDown, &keydownLeft, &keydownRight);
-
-			if (tab == RECENTS) {
-				filetype = namelist[cursor][9];
-			}
-			if kb_IsDown(kb_KeyClear) {return "1";}
-			if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {
-				*outfiletype = filetype;
-				uint8_t rec = ti_Open(RECENTS_FILENAME, "a");
-				ti_Rewind(rec);
-				int a = ti_GetC(rec) + 1;
-				ti_Rewind(rec);
-				ti_PutC(a > ITEM_COUNT ? ITEM_COUNT : a, rec);
-				ti_Seek(1, SEEK_SET, rec);
-				char d[ITEM_COUNT * 10];
-				ti_Read(d, ITEM_COUNT * 10, 1, rec);
-				ti_Seek(11, SEEK_SET, rec);
-				ti_Write(d, ITEM_COUNT * 10, 1, rec);
-				ti_Seek(1, SEEK_SET, rec);
-				ti_Write(namelist[cursor], 10, 1, rec);
-				if (tab != RECENTS) {
-					ti_Seek(10, SEEK_SET, rec);
-					ti_Write(&filetype, 1, 1, rec);
-				}
-				ti_Close(rec);
-				return namelist[cursor];
-			}
-			if (arrowkeys & 1<<2) {
-				tab--; 
-				if (tab < -1) {tab = -1;}
-				break;
-			}
-			if (arrowkeys & 1<<3) {
-				tab++;
-				if (tab >= TAB_COUNT) {tab = TAB_COUNT-1;}
-				break;
+			if (full_redraw) {
+				gfx_BlitBuffer();
 			}
 
-			if (arrowkeys & 1<<1) {cursor++;}
-			if (arrowkeys & 1<<0) {cursor--;}
+			full_redraw = false;
 
-			if (cursor < scroll) {scroll--;}
-			if (cursor > 1000) {cursor = namelistsize - 1; scroll = namelistsize >= ITEM_COUNT ? cursor - ITEM_COUNT : scroll;}
-			if (namelist[cursor][0] == '\0') {cursor = 0; scroll = 0;}
-			if (cursor > scroll + ITEM_COUNT - 1) {scroll++;}
-
+			delay(20);
 			//while (!kb_AnyKey());
 		}
 
-		delay(100);
+		while (kb_AnyKey());
+		//delay(100);
 	}
 
 	return "0"; //namelist[cursor];
