@@ -29,7 +29,7 @@
 #define ITEM_COUNT 20 // 18 // How many file names on-screen
 //#define LIST_Y 44
 #define LIST_Y 28
-#define LIST_X 71
+#define LIST_X 73
 #define ARROW_REPEATTIMER 14
 
 #define RECENTS -1
@@ -364,13 +364,19 @@ char *fileselectmenu(uint8_t *outfiletype) {
 			if (arrowkeys != 0 || full_redraw) {
 			for (int i = rowmin; i < rowmax; i++) {
 				if (i + scroll < namelistsize) {
-					/*if (i + scroll == cursor) {
-						//gfx_PrintStringXY(">", 32, i * 10 + 44);
+					if (i + scroll == cursor) {
 						gfx_SetColor(COLORS_CURSOR);
-						gfx_FillRectangle(LIST_X, i * 10 + LIST_Y - 2, 169, 11);
-					}*/
-					gfx_SetColor(i + scroll == cursor ? COLORS_CURSOR : COLORS_BG);
-					gfx_FillRectangle(LIST_X, i * 10 + LIST_Y - 2, 169, 11);
+						gfx_FillRectangle(LIST_X, i * 10 + LIST_Y - 2, 167, 11);
+					} else {
+						gfx_SetColor(COLORS_BG);
+						if (i + scroll < cursor) {
+							gfx_FillRectangle(LIST_X, i * 10 + LIST_Y - 2, 167, 11);
+						} else {
+							gfx_FillRectangle(LIST_X, i * 10 + LIST_Y - 1, 167, 10);
+						}
+					}
+					//gfx_SetColor(i + scroll == cursor ? COLORS_CURSOR : COLORS_BG);
+					//gfx_FillRectangle(LIST_X, i * 10 + LIST_Y - 2, 167, 11);
 					if (tab == RECENTS) {
 						filetype = namelist[i + scroll][9];
 					}
@@ -418,18 +424,18 @@ char *fileselectmenu(uint8_t *outfiletype) {
 				gfx_FillRectangle(243, LIST_Y - 1, 3, ITEM_COUNT * 10 - 2);
 			}
 			gfx_SetColor(COLORS_FG);
-			gfx_Rectangle(242, LIST_Y - 2, 6, ITEM_COUNT * 10);
+			gfx_Rectangle(242, LIST_Y - 2, 6, ITEM_COUNT * 10 + 1);
 			if (namelistsize <= ITEM_COUNT) {
-				gfx_FillRectangle(244, LIST_Y, 2, ITEM_COUNT * 10 - 4);
+				gfx_FillRectangle(244, LIST_Y, 2, ITEM_COUNT * 10 - 3);
 			} else {
-				gfx_FillRectangle(244, LIST_Y + (ITEM_COUNT * 10 * scroll) / namelistsize, 2, ((ITEM_COUNT * 10 - 4) * ITEM_COUNT) / namelistsize - 2);
+				gfx_FillRectangle(244, LIST_Y + (ITEM_COUNT * 10 * scroll) / namelistsize, 2, ((ITEM_COUNT * 10 - 4) * ITEM_COUNT) / namelistsize - 1);
 			}
 
 			gfx_SetTextBGColor(COLORS_BG);
 			gfx_SetTextFGColor(COLORS_FG);
 			//gfx_PrintStringXY("File", 2, 232);
 			//gfx_PrintStringXY("Edit", 64, 232);
-			gfx_PrintStringXY("View", 132, 232);
+			gfx_PrintStringXY("View", 143, 232);
 			//gfx_PrintStringXY("Navigate", 192, 232);
 			gfx_PrintStringXY("Help", 288, 232);
 
