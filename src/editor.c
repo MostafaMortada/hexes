@@ -38,7 +38,6 @@ int start_editor(char *filename, uint8_t filetype) {
 
 	int tab = 0; // 0 for editing hex digits, 1 for editing ascii
 
-	int frametimer = 0; // unused, will probably be removed later
 	int repeattimer = 0;
 	int arrowrepeattimer = 0;
 
@@ -431,7 +430,7 @@ U, |     |  |   U\   ,|
 		if (row_min < 0) {row_min = 0;}
 		if (row_max > 21) {row_max = 21;}
 		ti_Seek((scroll + row_min) * 8, SEEK_SET, buf_h);
-		for (uint24_t i = row_min; i < row_max; i++) { // main hex drawing loop thingy
+		for (int i = row_min; i < row_max; i++) { // main hex drawing loop thingy
 			gfx_SetTextFGColor(COLORS_FG);
 			gfx_SetTextBGColor(COLORS_BG2);
 			gfx_SetTextXY(2, i*10 + 16);
@@ -532,9 +531,6 @@ U, |     |  |   U\   ,|
 				break;
 			}
 		}
-
-		frametimer++;
-		//while (!kb_AnyKey()) {repeattimer = 0; frametimer++;}
 	}
 
 	ti_Close(buf_h);
