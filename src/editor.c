@@ -346,9 +346,17 @@ int start_editor(char *filename, uint8_t filetype) {
 		gfx_SetTextXY(88, 2);
 		if (hex_addresses) {
 			gfx_PrintString("0x");
-			Print24bHex(cursor_o);
+			{
+				char *a = uint_to_base(cursor_o, 16, 6);
+				gfx_PrintString(a);
+				free(a);
+			}
 			gfx_PrintString("/");
-			Print24bHex(ti_GetSize(buf_h));
+			{
+				char *a = uint_to_base(ti_GetSize(buf_h), 16, 6);
+				gfx_PrintString(a);
+				free(a);
+			}
 			gfx_PrintString(" B");
 		} else {
 			gfx_PrintUInt(cursor_o, 5);
@@ -430,7 +438,9 @@ U, |     |  |   U\   ,|
 			if ((i + scroll) * 8 < ti_GetSize(buf_h)) {
 				if (hex_addresses) {
 					gfx_PrintString("0x");
-					Print24bHex((i+scroll) * 8);
+					char *a = uint_to_base((i+scroll) * 8, 16, 6);
+					gfx_PrintString(a);
+					free(a);
 				} else {
 					gfx_PrintUInt((i+scroll) * 8, 8);
 				}
@@ -461,7 +471,7 @@ U, |     |  |   U\   ,|
 					}*/
 					//gfx_SetTextXY(80 + o * 20, i*10 + 16);
 					gfx_SetTextXY(84 + o * 20, i*10 + 16);
-					char *sub = dec_to_hex_u8b(num);
+					char *sub = uint_to_base((uint8_t)c, 16, 2); //dec_to_hex_u8b(num);
 					if (selected) {
 						for (int ch = 0; ch < 2; ch++) {
 							if (ch == nibble) {
@@ -476,6 +486,7 @@ U, |     |  |   U\   ,|
 					} else {
 						gfx_PrintString(sub);
 					} // comment
+					free(sub);
 					gfx_SetTextBGColor(COLORS_BG2);
 					if (selected) {
 						gfx_SetTextBGColor(COLORS_CURSOR);

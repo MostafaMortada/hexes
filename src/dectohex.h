@@ -11,14 +11,9 @@
 
 #ifndef DECTOHEX_H
 #define DECTOHEX_H
-#include <stdint.h>
 
-extern char hex_8b [768];
-
-char *dec_to_hex_u8b(uint8_t num);
-
-char **dec_to_hex_u24b(uint24_t num);
-
-void Print24bHex(uint24_t num);
+// convert unsigned int to any base with any number of digits
+// DO NOT FORGET TO USE free() AFTER YOU ARE DONE USING THE OUTPUT OF THIS FUNCTION
+char *uint_to_base(unsigned int num, int base, int digitcount);
 
 #endif

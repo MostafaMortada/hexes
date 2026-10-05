@@ -60,7 +60,7 @@ char *fileselectmenu(uint8_t *outfiletype) {
 	static char namelist[256][10] = {};
 
 	{
-		uint8_t rec = ti_Open(RECENTS_FILENAME, "a");
+		uint8_t rec = ti_Open(RECENTS_FILENAME, "a+");
 		ti_SetArchiveStatus(false, rec);
 		ti_Resize(256, rec);
 		ti_Close(rec);
@@ -213,7 +213,7 @@ char *fileselectmenu(uint8_t *outfiletype) {
 			if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {
 				gfx_SetDrawBuffer();
 				*outfiletype = filetype;
-				uint8_t rec = ti_Open(RECENTS_FILENAME, "a");
+				uint8_t rec = ti_Open(RECENTS_FILENAME, "r+");
 				ti_Rewind(rec);
 				int a = ti_GetC(rec) + 1;
 				ti_Rewind(rec);
