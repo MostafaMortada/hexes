@@ -19,7 +19,7 @@
 #include <graphx.h>
 #include <ti/vars.h>
 #include "fileoper.h"
-#include "dectohex.h"
+#include "baseconv.h"
 #include "ui.h"
 #include "config.h"
 #include "input.h"
@@ -29,6 +29,7 @@
 #define ARROW_REPEATTIMER 9
 
 int start_editor(char *filename, uint8_t filetype) {
+	int exit_code = 0;
 
 	bool full_redraw = true;
 
@@ -106,6 +107,7 @@ int start_editor(char *filename, uint8_t filetype) {
 		}
 
 		bool wanna_quit = false; // obvious what this does ig; set this flag if user does anything to quit and then act accordingly
+		exit_code = 0;
 
 		//if (frametimer > FRAMETIMER_BUF_START)
 		{
@@ -113,12 +115,16 @@ int start_editor(char *filename, uint8_t filetype) {
 			if kb_IsDown(kb_KeyYequ) { // File
 				full_redraw = true;
 				int option = ui_menu(2, 190,
+					"Open      \0"
 					"Save      \0"
-					"Quit      \0"
-					"Close menu\0",
+					"Quit      \0",
 				0, 11, 3, kb_KeyYequ, kb_KeyClear);
 				switch (option) {
-					case 0: {
+					case 0:
+						wanna_quit = true;
+						exit_code = 1;
+						break;
+					case 1: {
 						uint8_t outfile = ti_OpenVar(filename, "r", filetype);
 						bool vararchived = ti_IsArchived(outfile);
 						ti_Close(outfile);
@@ -129,7 +135,7 @@ int start_editor(char *filename, uint8_t filetype) {
 						modified = false;
 						break;
 					}
-					case 1:
+					case 2:
 						wanna_quit = true;
 						break;
 					default:
@@ -158,17 +164,37 @@ int start_editor(char *filename, uint8_t filetype) {
 
 			if kb_IsDown(kb_KeyZoom) { // View
 				full_redraw = true;
-				int option = ui_menu(100, 190,
-					"Option 1     \0"
-					"Customization\0"
-					"Close menu   \0",
-				0, 14, 3, kb_KeyZoom, kb_KeyClear);
-				switch (option) {
+				char o[] =
+					"Customization       \0"
+					"Addresses | dec| hex\0";
+				o[hex_addresses ? 37 : 32] = 15;
+				switch (ui_menu(80, 200, o, 0, 21, 2, kb_KeyZoom, kb_KeyClear)) {
 					case 0:
-						break;
-					case 1:
 						config_menu();
 						break;
+					case 1: {
+						/*
+						char o[] =
+							"Display addresses in:\0"
+							"  Decimal            \0"
+							"  Hexadecimal        \0";
+						if (hex_addresses) {
+							o[44] = 15;
+						} else {
+							o[22] = 15;
+						}
+						switch(ui_menu(120, 200, o, 1, 22, 3, kb_KeyZoom, kb_KeyClear)) {
+							case 1:
+								hex_addresses = false;
+								break;
+							case 2:
+								hex_addresses = true;
+								break;
+							default:
+								break;
+						}*/
+						hex_addresses = !hex_addresses;
+					}
 					default:
 						break;
 				}
@@ -206,13 +232,7 @@ int start_editor(char *filename, uint8_t filetype) {
 				switch (option) {
 					case 0:
 						ditherscreen(COLORS_FG);
-						ui_menu(-1, 0,
-							"Hexes Hex Editor v2.0.0 BETA   \0"
-							"\5 Copyright 2024-2026 StephenM \0"
-							"See GitHub repository at:      \0"
-							"github.com/MostafaMortada/hexes\0"
-							"OK                             \0",
-						4, 32, 5, kb_KeyClear, kb_KeyClear);
+						ui_menu(-1, 0, ABOUT, 10, 32, 11, kb_KeyClear, kb_KeyClear);
 						break;
 					case 1:
 						ditherscreen(COLORS_FG);
@@ -340,28 +360,29 @@ int start_editor(char *filename, uint8_t filetype) {
 		gfx_SetTextFGColor(COLORS_FG);
 		gfx_SetTextXY(2, 2);
 		//gfx_PrintString("Hexes   ");
+		gfx_PrintString("FILE:");
 		gfx_PrintString(filename);
 		if (modified) gfx_PrintString("*");
-		gfx_SetTextXY(88, 2);
+		gfx_SetTextXY(140, 2);
 		if (hex_addresses) {
 			gfx_PrintString("0x");
 			{
 				char *a = uint_to_base(cursor_o, 16, 6);
 				gfx_PrintString(a);
 				free(a);
-			}
+			}/*
 			gfx_PrintString("/");
 			{
 				char *a = uint_to_base(ti_GetSize(buf_h), 16, 6);
 				gfx_PrintString(a);
 				free(a);
 			}
-			gfx_PrintString(" B");
+			gfx_PrintString(" B");*/
 		} else {
 			gfx_PrintUInt(cursor_o, 5);
-			gfx_PrintString("/");
-			gfx_PrintUInt(ti_GetSize(buf_h), 5);
-			gfx_PrintString(" B");
+			// gfx_PrintString("/");
+			// gfx_PrintUInt(ti_GetSize(buf_h), 5);
+			// gfx_PrintString(" B");
 		}
 
 		//gfx_PrintStringXY("   ", 240, 2);
@@ -430,6 +451,7 @@ U, |     |  |   U\   ,|
 		if (row_min < 0) {row_min = 0;}
 		if (row_max > 21) {row_max = 21;}
 		ti_Seek((scroll + row_min) * 8, SEEK_SET, buf_h);
+		uint8_t TRANSCOL = ret_text_trans_color();
 		for (int i = row_min; i < row_max; i++) { // main hex drawing loop thingy
 			gfx_SetTextFGColor(COLORS_FG);
 			gfx_SetTextBGColor(COLORS_BG2);
@@ -458,12 +480,24 @@ U, |     |  |   U\   ,|
 						gfx_SetTextFGColor(COLORS_BG);
 					} else*/
 					uint8_t color = COLORS_FG;
-					if (num == 0) {color = COLORS_NULL;}
-					else if (num < 0x20) {color = COLORS_01_1F;}
-					else if (num < 0x80) {color = COLORS_20_7F;}
-					else {color = COLORS_80_FF;}
-					gfx_SetTextFGColor(color);
-					gfx_SetTextBGColor(COLORS_BG);
+					if (bytecolormode == 1) {
+						if (num == 0) {color = COLORS_NULL;}
+						else if (num < 0x20) {color = COLORS_01_1F;}
+						else if (num < 0x80) {color = COLORS_20_7F;}
+						else {color = COLORS_80_FF;}
+					} else if (bytecolormode == 2 || bytecolormode == 3) {
+						color = num;
+					}
+
+					if (bytecolormode == 3) {
+						gfx_SetTextFGColor(color < 128 ? 255 : 0);
+						gfx_SetTextBGColor(color);
+						gfx_SetColor(color);
+						gfx_FillRectangle(81 + o * 20, i*10 + 15, 20, 10);
+					} else {
+						gfx_SetTextFGColor(color);
+						gfx_SetTextBGColor(COLORS_BG);
+					}
 					/*if (selected) {
 						gfx_SetColor(COLORS_CURSOR);
 						gfx_Rectangle(83 + o * 20 + nibble * 10, i*10 + 15, 8, 10);
@@ -535,5 +569,5 @@ U, |     |  |   U\   ,|
 
 	ti_Close(buf_h);
 
-	return 0;
+	return exit_code;
 }

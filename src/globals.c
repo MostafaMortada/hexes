@@ -40,3 +40,13 @@ uint8_t ret_text_trans_color() { // because FOR SOME FUCKING REASON I CAN'T DISA
 modifier_key_options_t modkeybehavior = MODIFIER_HOLD;
 
 bool hex_addresses = false;
+
+int digits_in_uppercase = 1;
+
+/*
+ * 0  mono
+ * 1  palette
+ * 2  FG xlibc
+ * 3  BG xlibc
+ */
+int bytecolormode = 1;

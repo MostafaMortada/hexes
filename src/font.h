@@ -14,6 +14,7 @@
 
 #include "stdint.h"
 
-extern const uint8_t font[2048];
+extern const uint8_t font_hexes[2048];
+extern const unsigned char font_mstmono[2048];
 
 #endif

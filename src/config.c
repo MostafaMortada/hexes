@@ -70,11 +70,11 @@ void config_menu() {
 			"CONFIGURATION MENU              \0"
 			"Color palette                   \0"
 			"Modifier keys   ?               \0"
-			"Addresses       ?               \0"
+			"Digit case      ?               \0"
 			"Exit menu                       \0";
 		
 		strcpy(optlist + 66 + 16, ("<   Toggle    > \0" "< Toggle lock > \0" "<    Hold     > \0") + modkeybehavior * 17); // Modifier key option
-		strcpy(optlist + 99 + 16, hex_addresses ? "< Hexadecimal > \0" : "<   Decimal   > \0");
+		strcpy(optlist + 99 + 16, digits_in_uppercase == 0 ? "< lowercase >   \0" : "< UPPERCASE >   \0");
 		
 		if (will_draw_dither) {
 			ditherscreen(COLORS_FG);
@@ -90,8 +90,7 @@ void config_menu() {
 					"CEaShell       \0"
 					"Mono Black     \0"
 					"Mono White     \0"
-					"Custom palette \0"
-					"Exit menu      \0",
+					"Custom palette \0",
 					1, 16, 9, kb_KeyClear, kb_KeyClear)
 				) {
 					case 1: {
@@ -176,7 +175,8 @@ void config_menu() {
 				break;
 			case 3:
 				will_draw_dither = false;
-				hex_addresses = ! hex_addresses;
+				//hex_addresses = ! hex_addresses;
+				digits_in_uppercase = 1 - digits_in_uppercase;
 				break;
 			default:
 				exit = true;

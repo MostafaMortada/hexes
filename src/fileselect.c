@@ -59,14 +59,14 @@ char *fileselectmenu(uint8_t *outfiletype) {
 
 	static char namelist[256][10] = {};
 
-	{
-		uint8_t rec = ti_Open(RECENTS_FILENAME, "a+");
-		ti_SetArchiveStatus(false, rec);
-		ti_Resize(256, rec);
-		ti_Close(rec);
-	}
-
 	for (;;) {
+		{
+			uint8_t rec = ti_Open(RECENTS_FILENAME, "a+");
+			ti_SetArchiveStatus(false, rec);
+			ti_Resize(256, rec);
+			ti_Close(rec);
+		}
+
 		uint8_t filetype;
 		switch (tab) {
 			case -1:
@@ -181,13 +181,7 @@ char *fileselectmenu(uint8_t *outfiletype) {
 				0, 14, 3, kb_KeyGraph, kb_KeyClear)) {
 					case 0:
 						ditherscreen(COLORS_FG);
-						ui_menu(-1, 0,
-							"Hexes Hex Editor v2.0.0 BETA   \0"
-							"\5 Copyright 2024-2026 StephenM \0"
-							"See GitHub repository at:      \0"
-							"github.com/MostafaMortada/hexes\0"
-							"OK                             \0",
-						4, 32, 5, kb_KeyClear, kb_KeyClear);
+						ui_menu(-1, 0, ABOUT, 10, 32, 11, kb_KeyClear, kb_KeyClear);
 						break;
 					case 1:
 						ditherscreen(COLORS_FG);
@@ -209,8 +203,9 @@ char *fileselectmenu(uint8_t *outfiletype) {
 			if (tab == RECENTS) {
 				filetype = namelist[cursor][9];
 			}
+
 			if kb_IsDown(kb_KeyClear) {return "1";}
-			if (kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) {
+			if ((kb_IsDown(kb_Key2nd) || kb_IsDown(kb_KeyEnter)) && namelistsize > 0) {
 				gfx_SetDrawBuffer();
 				*outfiletype = filetype;
 				uint8_t rec = ti_Open(RECENTS_FILENAME, "r+");
@@ -240,6 +235,11 @@ char *fileselectmenu(uint8_t *outfiletype) {
 			if (arrowkeys & 1<<3) {
 				tab++;
 				if (tab >= TAB_COUNT) {tab = TAB_COUNT-1;}
+				break;
+			}
+
+			if (kb_IsDown(kb_KeyYequ)) {
+				ti_Delete(RECENTS_FILENAME);
 				break;
 			}
 
@@ -433,6 +433,9 @@ char *fileselectmenu(uint8_t *outfiletype) {
 
 			gfx_SetTextBGColor(COLORS_BG);
 			gfx_SetTextFGColor(COLORS_FG);
+			if (tab == RECENTS) {
+				gfx_PrintStringXY("Clear", 2, 232);
+			}
 			//gfx_PrintStringXY("File", 2, 232);
 			//gfx_PrintStringXY("Edit", 64, 232);
 			gfx_PrintStringXY("View", 143, 232);

@@ -34,14 +34,16 @@ int main(void) {
 	char *filename = check_for_ans(&filetype, &headless_has_palette); // headless start
 
 	gfx_Begin();
-	gfx_SetFontData(font);
+	gfx_SetFontData(font_hexes);
 	kb_SetMode(MODE_3_CONTINUOUS);
 
 	load_config(headless_has_palette);
 	
 	gfx_SetTextTransparentColor(ret_text_trans_color());
 	
+
 	if (filename[0] < 'A') { // this only executes if headless start failed
+show_file_selector:
 		filename = fileselectmenu(&filetype);
 	}
 
@@ -53,7 +55,8 @@ int main(void) {
 
 	if (filename[0] >= 'A') {
 		copyvar(filename, filetype, BUFFER_FILENAME, OS_TYPE_APPVAR);
-		start_editor(filename, filetype);
+		int exit_code = start_editor(filename, filetype);
+		if (exit_code == 1) { goto show_file_selector; }
 	}
 
 	ti_Delete(BUFFER_FILENAME);

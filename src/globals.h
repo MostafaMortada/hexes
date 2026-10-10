@@ -20,6 +20,8 @@ extern uint8_t palette[];
 uint8_t ret_text_trans_color();
 extern modifier_key_options_t modkeybehavior;
 extern bool hex_addresses;
+extern int digits_in_uppercase;
+extern int bytecolormode;
 
 #define COLORS_BG (palette[0])
 #define COLORS_FG (palette[1])
